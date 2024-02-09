@@ -48,17 +48,17 @@ jobs:
         gomobile init
         go mod tidy -v
         gomobile bind -v -androidapi 19 -ldflags='-s -w' ./
-        cp *.aar ${{ github.workspace }}/V2rayNG/app/libs/
+        cp *.aar ${{ github.workspace }}/app/libs/
 
     - name: Build APK
       run: |
-        cd ${{ github.workspace }}/V2rayNG
+        cd ${{ github.workspace }}/
         chmod 777 *
-        sed -i 's/org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8/org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8/' ${{ github.workspace }}/V2rayNG/gradle.properties
+        sed -i 's/org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8/org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8/' ${{ github.workspace }}/gradle.properties
         ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
         name: apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/debug/
+        path: ${{ github.workspace }}/app/build/outputs/apk/debug/
