@@ -264,4 +264,13 @@
         <item>Proxy only</item>
     </string-array>
 
+    <string name="asset_statements" translatable="false">[{ \"include\": \"https://api.prox.saltech.ir/.well-known/assetlinks.json\" }]</string>
+
+    <string name="signup_username">نام و نام خانوادگی</string>
+    <string name="signup_phone">شماره تلفن همراه</string>
+    <string name="signup_button_text">ورود / ثبت نام به برنامه</string>
+    <string name="verify_title">رمز یکبار مصرف، جهت تأیید ورود شما، پیامک گردیده است.</string>
+    <string name="resend">ارسال مجدد</string>
+    <string name="signin_app">ورود به برنامه</string>
+
 </resources>

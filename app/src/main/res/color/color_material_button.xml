@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="1" android:color="@color/colorAccent"/>
+    <item android:alpha="0.6" android:color="@color/colorAccent" android:state_hovered="true"/>
+    <item android:alpha="0.4" android:color="@color/disable_button" android:state_enabled="false" />
+</selector>

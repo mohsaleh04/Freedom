@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/row_button_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/row_button_bg"
+    android:backgroundTint="@color/color_material_button"
+    android:fontFamily="@font/peyda_medium"
+    android:gravity="center"
+    android:layoutDirection="ltr"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingTop="5dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="5dp">
+
+    <TextView
+        android:id="@+id/row_button_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_weight="1"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/peyda_regular"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:paddingStart="16dp"
+        android:singleLine="true"
+        android:text="@string/signup_button_text"
+        android:textColor="@color/color_material_button_text"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/row_button_icon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginEnd="16dp"
+        android:padding="2.5dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/login"
+        app:tint="@color/color_material_button_text" />
+
+</LinearLayout>

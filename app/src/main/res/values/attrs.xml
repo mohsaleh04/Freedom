@@ -2,4 +2,8 @@
 <resources>
     <attr name="colorMainBg" format="color"/>
     <attr name="colorMainText" format="color"/>
+    <declare-styleable name="RowButton">
+        <attr name="android:text" format="string"/>
+        <attr name="android:src" format="string"/>
+    </declare-styleable>
 </resources>

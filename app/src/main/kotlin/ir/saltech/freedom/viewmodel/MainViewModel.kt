@@ -3,6 +3,9 @@ package ir.saltech.freedom.viewmodel
 import android.app.Application
 import android.content.*
 import android.os.Build
+import android.os.Bundle
+import android.telephony.SmsMessage
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
@@ -18,6 +21,17 @@ import ir.saltech.freedom.AppConfig.ANG_PACKAGE
 import ir.saltech.freedom.R
 import ir.saltech.freedom.databinding.DialogConfigFilterBinding
 import ir.saltech.freedom.dto.*
+import ir.saltech.freedom.dto.Saver.Companion.saver
+import ir.saltech.freedom.dto.api.ApiCallback
+import ir.saltech.freedom.dto.api.ApiClient
+import ir.saltech.freedom.dto.api.ResponseMsg
+import ir.saltech.freedom.dto.api.call
+import ir.saltech.freedom.dto.otp.OtpCode
+import ir.saltech.freedom.dto.otp.OtpSms
+import ir.saltech.freedom.dto.user.Service
+import ir.saltech.freedom.dto.user.User
+import ir.saltech.freedom.dto.user.VspList
+import ir.saltech.freedom.extension.asToken
 import ir.saltech.freedom.extension.toast
 import ir.saltech.freedom.util.*
 import ir.saltech.freedom.util.MmkvManager.KEY_ANG_CONFIGS
@@ -52,8 +66,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isRunning by lazy { MutableLiveData<Boolean>() }
     val updateListAction by lazy { MutableLiveData<Int>() }
     val updateTestResultAction by lazy { MutableLiveData<String>() }
-
+    var context: Context? = null
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
+    val updateOtpAction by lazy { MutableLiveData<String>() }
 
     fun startListenBroadcast() {
         isRunning.value = false
@@ -63,10 +78,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY),
                 Context.RECEIVER_EXPORTED
             )
+            getApplication<AngApplication>().registerReceiver(
+                mOtpReceiver,
+                IntentFilter("android.provider.Telephony.SMS_RECEIVED"),
+                Context.RECEIVER_EXPORTED
+            )
         } else {
             getApplication<AngApplication>().registerReceiver(
                 mMsgReceiver,
                 IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY)
+            )
+            getApplication<AngApplication>().registerReceiver(
+                mOtpReceiver,
+                IntentFilter("android.provider.Telephony.SMS_RECEIVED")
             )
         }
         MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_REGISTER_CLIENT, "")
@@ -111,6 +135,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Collections.swap(serversCache, fromPosition, toPosition)
         mainStorage?.encode(KEY_ANG_CONFIGS, Gson().toJson(serverList))
     }
+
+    
+
 
     @Synchronized
     fun updateCache() {
@@ -301,6 +328,102 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     updateListAction.value = getPosition(resultPair.first)
                 }
             }
+        }
+    }
+    
+    /** PROX DATA **/
+    fun saveUser(user: User) {
+        context!!.saver.setUser(user)
+    }
+
+    fun loadUser(): User? {
+        return context!!.saver.getUser()
+    }
+
+
+    fun sendSignUpRequest(user: User, callback: ApiCallback<ResponseMsg>) {
+        ApiClient.freedom.signUp(user.copy(job = ir.saltech.freedom.dto.user.Job.SignUp)).call(callback)
+    }
+
+    fun sendVerifyPhoneRequest(user: User, callback: ApiCallback<ResponseMsg>) {
+        ApiClient.freedom.verifyPhone(user.copy(job = ir.saltech.freedom.dto.user.Job.Verify)).call(callback)
+    }
+
+    fun sendSignInRequest(user: User, callback: ApiCallback<User>) {
+        ApiClient.freedom.signIn(user.copy(job = ir.saltech.freedom.dto.user.Job.SignIn)).call(callback)
+    }
+
+    fun sendGetServiceRequest(user: User, callback: ApiCallback<Service>) {
+        if (user.accessToken != null)
+            ApiClient.freedom.getService(user.accessToken.asToken(), user).call(callback, true)
+    }
+
+    fun sendAllocateServiceRequest(user: User, callback: ApiCallback<ResponseMsg>) {
+        if (user.accessToken != null)
+            ApiClient.freedom.allocateService(user.accessToken.asToken(), user).call(callback, true)
+    }
+
+    fun sendGetVSPListRequest(callback: ApiCallback<VspList>) {
+        ApiClient.freedom.getVspList().call(callback)
+    }
+
+    fun sendGetLinksRequest(user: User, callback: ApiCallback<Service>) {
+        if (user.accessToken != null)
+            ApiClient.freedom.getLinks(user.accessToken.asToken(), user).call(callback, true)
+    }
+
+
+    private val mOtpReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            try {
+                val code = getOtpFromSms(getNewOtpSms(intent.extras!!)!!) ?: return
+                if (code.otp.isNotEmpty()) {
+                    updateOtpAction.value = code.otp
+                }
+            } catch (e: Exception) {
+                Log.e("SmsReceiver", "Exception smsReceiver: $e")
+            }
+        }
+    }
+
+    private fun getOtpFromSms(newOtpSms: OtpSms): OtpCode? {
+        newOtpSms.body.lines()[newOtpSms.body.lines().size - 1].let {
+            try {
+                val base64Decode = Base64.decode(it, Base64.DEFAULT).toString(Charsets.UTF_8)
+                if (base64Decode.isEmpty()) return null
+                if (!newOtpSms.body.contains(base64Decode)) return null
+                return OtpCode(base64Decode, newOtpSms.sentTime)
+            } catch (e: IllegalArgumentException) {
+                return null
+            }
+        }
+    }
+
+    private fun getNewOtpSms(bundle: Bundle?): OtpSms? {
+        if (bundle != null) {
+            if (bundle.containsKey("pdus")) {
+                val pdus = bundle.get("pdus")
+                if (pdus != null) {
+                    val pdusObj = pdus as Array<*>
+                    var message = ""
+                    var date = 0L
+                    for (i in pdusObj.indices) {
+                        val currentMessage =
+                            SmsMessage.createFromPdu(pdusObj[i] as ByteArray?, "3gpp")
+                        if (currentMessage.displayMessageBody.startsWith("<#>")) {
+                            message += currentMessage.displayMessageBody
+                            date = currentMessage.timestampMillis
+                        }
+                    } // end for loop
+                    return OtpSms(message, date)
+                } else {
+                    return null
+                }
+            } else {
+                return null
+            }
+        } else {
+            return null
         }
     }
 }

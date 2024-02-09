@@ -10,10 +10,14 @@
     <color name="colorSelected">#000000</color>
     <color name="colorUnselected">#FFFFFF</color>
 
-    <color name="colorPrimary">#FFFFFF</color>
-    <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#000000</color>
-    <color name="colorBg">#FFFFFF</color>
-    <color name="colorText">#000000</color>
+    <color name="colorPrimary">#FD7E14</color>
+    <color name="colorPrimaryDark">#FD7E14</color>
+    <color name="colorAccent">#FD7E14</color>
+    <color name="disable_button_fade">#26323232</color>
+    <color name="colorBg">#FBE9E7</color>
+    <color name="colorText">#2C3E50</color>
     <color name="colorMainTestBg">#F0F1F6</color>
+    <color name="disable_button">#C0323232</color>
+    <color name="colorError">#B71C1C</color>
+    <color name="primary_button_bg">#33009688</color>
 </resources>

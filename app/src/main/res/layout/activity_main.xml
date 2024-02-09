@@ -1,81 +1,478 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:background="@color/colorBg"
+    android:fitsSystemWindows="true"
+    android:layoutDirection="ltr"
+    tools:context=".ui.MainActivity">
 
-    <LinearLayout
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:background="@color/colorBg"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true">
+            android:orientation="vertical">
 
-            <androidx.coordinatorlayout.widget.CoordinatorLayout
-                android:id="@+id/main_content"
+            <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize" />
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true">
+
+                <androidx.coordinatorlayout.widget.CoordinatorLayout
+                    android:id="@+id/main_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recycler_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:nextFocusRight="@+id/fab" />
+
+                        <LinearLayout
+                            android:id="@+id/layout_test"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/connection_test_height"
+                            android:background="@color/colorMainTestBg"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center|start"
+                            android:nextFocusLeft="@+id/recycler_view"
+                            android:nextFocusRight="@+id/fab">
+
+                            <TextView
+                                android:id="@+id/tv_test_state"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingStart="16dp"
+                                android:text="@string/connection_test_pending"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                                android:textColor="@color/colorText" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+
+                    <com.github.jorgecastilloprz.FABProgressCircle
+                        android:id="@+id/fabProgressCircle2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginBottom="24dp">
+
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/fab2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_gravity="bottom|end"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_marginBottom="16dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:nextFocusLeft="@+id/layout_test"
+                            android:src="@drawable/ic_stat_name"
+                            app:layout_anchorGravity="bottom|right|end" />
+
+                    </com.github.jorgecastilloprz.FABProgressCircle>
+                </androidx.coordinatorlayout.widget.CoordinatorLayout>
+            </RelativeLayout>
+        </LinearLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            app:headerLayout="@layout/nav_header"
+            app:itemIconTint="@color/colorAccent"
+            app:menu="@menu/menu_drawer">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:padding="2dp">
+
+                <TextView
+                    android:id="@+id/version"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center" />
+            </LinearLayout>
+        </com.google.android.material.navigation.NavigationView>
+    </androidx.drawerlayout.widget.DrawerLayout>
+
+    <!-- MY SIDE -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/new_design_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
+        android:background="@color/colorBg"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/signup_login_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorBg"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="250dp"
+                android:layout_height="75dp"
+                android:scaleX="0.9"
+                android:scaleY="0.9"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.28"
+                app:srcCompat="@drawable/saltech_prox" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:animateLayoutChanges="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="@+id/imageView"
+                app:layout_constraintStart_toStartOf="@+id/imageView"
+                app:layout_constraintTop_toBottomOf="@+id/imageView">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recycler_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:nextFocusRight="@+id/fab" />
+                    android:layout_height="wrap_content"
+                    android:animateLayoutChanges="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <LinearLayout
-                        android:id="@+id/layout_test"
+                        android:id="@+id/signup_layout"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/connection_test_height"
-                        android:background="@color/colorMainTestBg"
-                        android:gravity="center|start"
-                        android:nextFocusRight="@+id/fab"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:nextFocusLeft="@+id/recycler_view">
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="visible">
 
-                        <TextView
-                            android:id="@+id/tv_test_state"
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/signup_phone"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:maxLines="2"
-                            android:minLines="1"
-                            android:paddingStart="16dp"
-                            android:text="@string/connection_test_pending"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                            android:textColor="@color/colorText" />
+                            android:fontFamily="@font/peyda_medium"
+                            android:hint="@string/signup_phone"
+                            android:layoutDirection="rtl"
+                            android:textColorHint="@color/color_material_input"
+                            android:textDirection="rtl"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="15dp"
+                            app:boxCornerRadiusBottomStart="15dp"
+                            app:boxCornerRadiusTopEnd="15dp"
+                            app:boxCornerRadiusTopStart="15dp"
+                            app:boxStrokeColor="@color/color_material_input"
+                            app:boxStrokeErrorColor="@color/colorError"
+                            app:boxStrokeWidth="2dp"
+                            app:endIconDrawable="@drawable/current_phone_number"
+                            app:endIconMode="custom"
+                            app:endIconTint="@color/color_material_input"
+                            app:errorTextAppearance="@style/HelpTextStyle"
+                            app:errorTextColor="@color/colorError"
+                            app:helperText="مثال: 09123456789"
+                            app:helperTextTextAppearance="@style/HelpTextStyle">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:background="@null"
+                                android:fontFamily="@font/peyda_medium"
+                                android:imeOptions="actionDone"
+                                android:inputType="phone"
+                                android:maxLength="11"
+                                android:maxLines="1"
+                                android:padding="16dp"
+                                android:singleLine="true"
+                                android:textColor="@color/color_material_input"
+                                android:textColorHint="@color/color_material_input"
+                                android:textDirection="ltr"
+                                android:textSize="14sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/signup_username"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:layoutDirection="rtl"
+                            android:textColorHint="@color/color_material_input"
+                            android:textDirection="rtl"
+                            android:visibility="gone"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="15dp"
+                            app:boxCornerRadiusBottomStart="15dp"
+                            app:boxCornerRadiusTopEnd="15dp"
+                            app:boxCornerRadiusTopStart="15dp"
+                            app:boxStrokeColor="@color/color_material_input"
+                            app:boxStrokeErrorColor="@color/colorError"
+                            app:boxStrokeWidth="2dp"
+                            app:errorEnabled="true"
+                            app:errorTextAppearance="@style/HelpTextStyle"
+                            app:errorTextColor="@color/colorError">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:background="@null"
+                                android:fontFamily="@font/peyda_medium"
+                                android:hint="@string/signup_username"
+                                android:imeOptions="actionDone"
+                                android:inputType="text|textPersonName|textCapWords"
+                                android:maxLength="50"
+                                android:maxLines="1"
+                                android:padding="16dp"
+                                android:singleLine="true"
+                                android:textColor="@color/color_material_input"
+                                android:textColorHint="@color/color_material_input"
+                                android:textDirection="rtl"
+                                android:textSize="14sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <ir.saltech.freedom.ui.view.RowButton
+                            android:id="@+id/signup_login_btn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="21dp"
+                            android:layout_marginBottom="5dp"
+                            android:src="@drawable/login"
+                            android:text="@string/signin_app" />
 
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/verify_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/verify_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/peyda_medium"
+                            android:justificationMode="inter_word"
+                            android:text="@string/verify_title"
+                            android:textColor="@color/disable_button"
+                            android:textSize="18sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/verify_code"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:enabled="false"
+                            android:gravity="center"
+                            android:layoutDirection="rtl"
+                            android:textColorHint="@color/color_material_input"
+                            android:textDirection="rtl"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="15dp"
+                            app:boxCornerRadiusBottomStart="15dp"
+                            app:boxCornerRadiusTopEnd="15dp"
+                            app:boxCornerRadiusTopStart="15dp"
+                            app:boxStrokeColor="@color/color_material_input"
+                            app:boxStrokeErrorColor="@color/colorError"
+                            app:boxStrokeWidth="2dp"
+                            app:errorEnabled="true"
+                            app:errorTextAppearance="@style/HelpTextStyle"
+                            app:errorTextColor="@color/colorError">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:background="@null"
+                                android:fontFamily="@font/peyda_medium"
+                                android:gravity="center"
+                                android:hint="رمز یکبار مصرف"
+                                android:imeOptions="actionDone"
+                                android:inputType="number"
+                                android:maxLength="8"
+                                android:maxLines="1"
+                                android:padding="16dp"
+                                android:singleLine="true"
+                                android:textColor="@color/color_material_input"
+                                android:textColorHint="@color/color_material_input"
+                                android:textDirection="rtl"
+                                android:textSize="14sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <ir.saltech.freedom.ui.view.RowButton
+                            android:id="@+id/resend_verify_code"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="5dp"
+                            android:src="@drawable/verify_phone_otp"
+                            android:text="@string/resend" />
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
+                <ProgressBar
+                    android:id="@+id/loading_bar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="11dp"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/home_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="true"
+            android:background="@color/colorBg"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <LinearLayout
+                android:id="@+id/checking_services"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminateOnly="true" />
+
+                <TextView
+                    android:id="@+id/checking_services_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/peyda_bold"
+                    android:text="در حال بررسی سرویس"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/connect_service"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/peyda_bold"
+                    android:text="اتصال به سرور"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <com.github.jorgecastilloprz.FABProgressCircle
                     android:id="@+id/fabProgressCircle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginBottom="24dp">
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="24dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/fab"
@@ -89,38 +486,21 @@
                         android:layout_marginRight="16dp"
                         android:layout_marginBottom="16dp"
                         android:clickable="true"
+                        android:contentDescription="TODO"
                         android:focusable="true"
                         android:nextFocusLeft="@+id/layout_test"
-                        android:src="@drawable/ic_stat_name"
-                        app:layout_anchorGravity="bottom|right|end" />
+                        android:src="@drawable/service_not_connected"
+                        android:tint="@color/color_material_button_text"
+                        app:backgroundTint="@color/color_material_button"
+                        app:fabCustomSize="185dp"
+                        app:layout_anchorGravity="bottom|right|end"
+                        app:maxImageSize="115dp" />
 
                 </com.github.jorgecastilloprz.FABProgressCircle>
-            </androidx.coordinatorlayout.widget.CoordinatorLayout>
-        </RelativeLayout>
-    </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:headerLayout="@layout/nav_header"
-        app:itemIconTint="@color/colorAccent"
-        app:menu="@menu/menu_drawer" >
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:padding="2dp">
-
-            <TextView
-                    android:id="@+id/version"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center" />
-        </LinearLayout>
-    </com.google.android.material.navigation.NavigationView>
-
-</androidx.drawerlayout.widget.DrawerLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 

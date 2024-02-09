@@ -1,60 +1,91 @@
 package ir.saltech.freedom.ui
 
 import android.Manifest
-import android.content.*
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.net.VpnService
-import androidx.recyclerview.widget.LinearLayoutManager
+import android.os.Build
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.text.Editable
+import android.text.TextUtils
+import android.text.TextWatcher
+import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import com.tbruyelle.rxpermissions.RxPermissions
-import ir.saltech.freedom.R
-import android.os.Bundle
-import android.text.TextUtils
-import android.view.KeyEvent
-import ir.saltech.freedom.AppConfig
-import android.content.res.ColorStateList
-import android.os.Build
-import com.google.android.material.navigation.NavigationView
-import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.recyclerview.widget.ItemTouchHelper
-import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
+import androidx.core.text.isDigitsOnly
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.navigation.NavigationView
+import com.tbruyelle.rxpermissions.RxPermissions
 import com.tencent.mmkv.MMKV
+import ir.saltech.freedom.AppConfig
 import ir.saltech.freedom.AppConfig.ANG_PACKAGE
 import ir.saltech.freedom.BuildConfig
+import ir.saltech.freedom.R
 import ir.saltech.freedom.databinding.ActivityMainBinding
 import ir.saltech.freedom.dto.EConfigType
+import ir.saltech.freedom.dto.api.ApiCallback
+import ir.saltech.freedom.dto.api.ResponseMsg
+import ir.saltech.freedom.dto.user.Service
+import ir.saltech.freedom.dto.user.User
+import ir.saltech.freedom.dto.user.VspList
+import ir.saltech.freedom.extension.asTime
 import ir.saltech.freedom.extension.toast
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 import ir.saltech.freedom.helper.SimpleItemTouchHelperCallback
 import ir.saltech.freedom.service.V2RayServiceManager
-import ir.saltech.freedom.util.*
+import ir.saltech.freedom.util.AngConfigManager
+import ir.saltech.freedom.util.MmkvManager
+import ir.saltech.freedom.util.SimUtils
+import ir.saltech.freedom.util.SpeedtestUtil
+import ir.saltech.freedom.util.Utils
 import ir.saltech.freedom.viewmodel.MainViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.drakeet.support.toast.ToastCompat
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.TimeUnit
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
-
+    private lateinit var user: User
+    private lateinit var vspList: VspList
+    private val activity = this
     private val adapter by lazy { MainRecyclerAdapter(this) }
-    private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
-    private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
-    private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            startV2Ray()
-        }
+    private val mainStorage by lazy {
+        MMKV.mmkvWithID(
+            MmkvManager.ID_MAIN,
+            MMKV.MULTI_PROCESS_MODE
+        )
     }
+    private val settingsStorage by lazy {
+        MMKV.mmkvWithID(
+            MmkvManager.ID_SETTING,
+            MMKV.MULTI_PROCESS_MODE
+        )
+    }
+    private val requestVpnPermission =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                startV2Ray()
+            }
+        }
     private var mItemTouchHelper: ItemTouchHelper? = null
     val mainViewModel: MainViewModel by viewModels()
 
@@ -65,11 +96,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         setContentView(view)
         title = getString(R.string.title_server)
         setSupportActionBar(binding.toolbar)
-
         binding.fab.setOnClickListener {
             if (mainViewModel.isRunning.value == true) {
                 Utils.stopVService(this)
-            } else if (settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN" == "VPN") {
+            } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
                 val intent = VpnService.prepare(this)
                 if (intent == null) {
                     startV2Ray()
@@ -99,27 +129,98 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
 
         val toggle = ActionBarDrawerToggle(
-                this, binding.drawerLayout, binding.toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+            this,
+            binding.drawerLayout,
+            binding.toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         binding.navView.setNavigationItemSelectedListener(this)
-        "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})".also { binding.version.text = it }
-
+        "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})".also {
+            binding.version.text = it
+        }
+        getPermissions()
         setupViewModel()
+        getUserDefaults()
+        onClicks()
         copyAssets()
         migrateLegacy()
 
+
+    }
+
+    private fun getUserDefaults() {
+        try {
+			MmkvManager.removeAllServer()
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
+        val loadedUser = mainViewModel.loadUser()
+        if (loadedUser == null) {
+            setLoginLayout()
+        } else {
+            user = loadedUser
+            setHomeLayout()
+        }
+    }
+
+    private fun getPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            RxPermissions(this)
-                .request(Manifest.permission.POST_NOTIFICATIONS)
+            val request = RxPermissions(this)
+            request.request(
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_PHONE_NUMBERS,
+                Manifest.permission.RECEIVE_SMS
+            )
                 .subscribe {
                     if (!it)
                         toast(R.string.toast_permission_denied)
                 }
+            request.setLogging(true)
+        } else {
+            val request = RxPermissions(this)
+            request.request(
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.RECEIVE_SMS
+            )
+                .subscribe {
+                    if (!it)
+                        toast(R.string.toast_permission_denied)
+                }
+            request.setLogging(true)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        val appLinkAction = intent.action
+        val appLinkData: Uri? = intent.data
+        if (Intent.ACTION_VIEW == appLinkAction) {
+            appLinkData?.lastPathSegment?.also { recipeId ->
+                Uri
+                    .parse("content://ir.saltech.freedom/app/")
+                    .buildUpon()
+                    .appendPath(recipeId)
+                    .build()
+                    .also { appData ->
+                        Toast.makeText(this, "App : $appData", Toast.LENGTH_LONG).show()
+                    }
+            }
         }
     }
 
     private fun setupViewModel() {
+        mainViewModel.context = this
+        mainViewModel.updateOtpAction.observe(this) {
+            checkOtpDoLogin(it)
+        }
         mainViewModel.updateListAction.observe(this) { index ->
             if (index >= 0) {
                 adapter.notifyItemChanged(index)
@@ -134,14 +235,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 if (!Utils.getDarkModeStatus(this)) {
                     binding.fab.setImageResource(R.drawable.ic_stat_name)
                 }
-                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
+                binding.fab.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
                 setTestState(getString(R.string.connection_connected))
                 binding.layoutTest.isFocusable = true
             } else {
                 if (!Utils.getDarkModeStatus(this)) {
                     binding.fab.setImageResource(R.drawable.ic_stat_name)
                 }
-                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
+                binding.fab.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
                 setTestState(getString(R.string.connection_not_connected))
                 binding.layoutTest.isFocusable = false
             }
@@ -156,17 +259,20 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             try {
                 val geo = arrayOf("geosite.dat", "geoip.dat")
                 assets.list("")
-                        ?.filter { geo.contains(it) }
-                        ?.filter { !File(extFolder, it).exists() }
-                        ?.forEach {
-                            val target = File(extFolder, it)
-                            assets.open(it).use { input ->
-                                FileOutputStream(target).use { output ->
-                                    input.copyTo(output)
-                                }
+                    ?.filter { geo.contains(it) }
+                    ?.filter { !File(extFolder, it).exists() }
+                    ?.forEach {
+                        val target = File(extFolder, it)
+                        assets.open(it).use { input ->
+                            FileOutputStream(target).use { output ->
+                                input.copyTo(output)
                             }
-                            Log.i(ANG_PACKAGE, "Copied from apk assets folder to ${target.absolutePath}")
                         }
+                        Log.i(
+                            ANG_PACKAGE,
+                            "Copied from apk assets folder to ${target.absolutePath}"
+                        )
+                    }
             } catch (e: Exception) {
                 Log.e(ANG_PACKAGE, "asset copy failed", e)
             }
@@ -189,7 +295,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
-    fun startV2Ray() {
+    private fun startV2Ray() {
         if (mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER).isNullOrEmpty()) {
             return
         }
@@ -199,15 +305,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         hideCircle()
     }
 
-    fun restartV2Ray() {
+    private fun restartV2Ray() {
         if (mainViewModel.isRunning.value == true) {
             Utils.stopVService(this)
         }
         Observable.timer(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    startV2Ray()
-                }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                startV2Ray()
+            }
     }
 
     public override fun onResume() {
@@ -229,46 +335,57 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             importQRcode(true)
             true
         }
+
         R.id.import_clipboard -> {
             importClipboard()
             true
         }
+
         R.id.import_manually_vmess -> {
             importManually(EConfigType.VMESS.value)
             true
         }
+
         R.id.import_manually_vless -> {
             importManually(EConfigType.VLESS.value)
             true
         }
+
         R.id.import_manually_ss -> {
             importManually(EConfigType.SHADOWSOCKS.value)
             true
         }
+
         R.id.import_manually_socks -> {
             importManually(EConfigType.SOCKS.value)
             true
         }
+
         R.id.import_manually_trojan -> {
             importManually(EConfigType.TROJAN.value)
             true
         }
+
         R.id.import_manually_wireguard -> {
             importManually(EConfigType.WIREGUARD.value)
             true
         }
+
         R.id.import_config_custom_clipboard -> {
             importConfigCustomClipboard()
             true
         }
+
         R.id.import_config_custom_local -> {
             importConfigCustomLocal()
             true
         }
+
         R.id.import_config_custom_url -> {
             importConfigCustomUrlClipboard()
             true
         }
+
         R.id.import_config_custom_url_scan -> {
             importQRcode(false)
             true
@@ -285,7 +402,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
 
         R.id.export_all -> {
-            if (AngConfigManager.shareNonCustomConfigsToClipboard(this, mainViewModel.serverList) == 0) {
+            if (AngConfigManager.shareNonCustomConfigsToClipboard(
+                    this,
+                    mainViewModel.serverList
+                ) == 0
+            ) {
                 toast(R.string.toast_success)
             } else {
                 toast(R.string.toast_failure)
@@ -310,14 +431,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         R.id.del_all_config -> {
             AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        MmkvManager.removeAllServer()
-                        mainViewModel.reloadServerList()
-                    }
-                    .show()
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    MmkvManager.removeAllServer()
+                    mainViewModel.reloadServerList()
+                }
+                .show()
             true
         }
-        R.id.del_duplicate_config-> {
+
+        R.id.del_duplicate_config -> {
             AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     mainViewModel.removeDuplicateServer()
@@ -325,6 +447,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 .show()
             true
         }
+
         R.id.del_invalid_config -> {
             AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -334,11 +457,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 .show()
             true
         }
+
         R.id.sort_by_test_results -> {
             MmkvManager.sortByTestResults()
             mainViewModel.reloadServerList()
             true
         }
+
         R.id.filter_config -> {
             mainViewModel.filterConfig(this)
             true
@@ -347,7 +472,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun importManually(createConfigType : Int) {
+    private fun importManually(createConfigType: Int) {
         startActivity(
             Intent()
                 .putExtra("createConfigType", createConfigType)
@@ -359,44 +484,50 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     /**
      * import config from qrcode
      */
-    fun importQRcode(forConfig: Boolean): Boolean {
+    private fun importQRcode(forConfig: Boolean): Boolean {
 //        try {
 //            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
 //                    .addCategory(Intent.CATEGORY_DEFAULT)
 //                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
 //        } catch (e: Exception) {
         RxPermissions(this)
-                .request(Manifest.permission.CAMERA)
-                .subscribe {
-                    if (it)
-                        if (forConfig)
-                            scanQRCodeForConfig.launch(Intent(this, ScannerActivity::class.java))
-                        else
-                            scanQRCodeForUrlToCustomConfig.launch(Intent(this, ScannerActivity::class.java))
+            .request(Manifest.permission.CAMERA)
+            .subscribe {
+                if (it)
+                    if (forConfig)
+                        scanQRCodeForConfig.launch(Intent(this, ScannerActivity::class.java))
                     else
-                        toast(R.string.toast_permission_denied)
-                }
+                        scanQRCodeForUrlToCustomConfig.launch(
+                            Intent(
+                                this,
+                                ScannerActivity::class.java
+                            )
+                        )
+                else
+                    toast(R.string.toast_permission_denied)
+            }
 //        }
         return true
     }
 
-    private val scanQRCodeForConfig = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            importBatchConfig(it.data?.getStringExtra("SCAN_RESULT"))
+    private val scanQRCodeForConfig =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                importBatchConfig(it.data?.getStringExtra("SCAN_RESULT"))
+            }
         }
-    }
 
-    private val scanQRCodeForUrlToCustomConfig = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            importConfigCustomUrl(it.data?.getStringExtra("SCAN_RESULT"))
+    private val scanQRCodeForUrlToCustomConfig =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                importConfigCustomUrl(it.data?.getStringExtra("SCAN_RESULT"))
+            }
         }
-    }
 
     /**
      * import config from clipboard
      */
-    fun importClipboard()
-            : Boolean {
+    private fun importClipboard(): Boolean {
         try {
             val clipboard = Utils.getClipboard(this)
             importBatchConfig(clipboard)
@@ -407,13 +538,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         return true
     }
 
-    fun importBatchConfig(server: String?, subid: String = "") {
-        val subid2 = if(subid.isNullOrEmpty()){
+    private fun importBatchConfig(server: String?, subid: String = "") {
+        val subid2 = subid.ifEmpty {
             mainViewModel.subscriptionId
-        }else{
-            subid
         }
-        val append = subid.isNullOrEmpty()
+        val append = subid.isEmpty()
 
         var count = AngConfigManager.importBatchConfig(server, subid2, append)
         if (count <= 0) {
@@ -430,8 +559,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
-    fun importConfigCustomClipboard()
-            : Boolean {
+    private fun importConfigCustomClipboard(): Boolean {
         try {
             val configText = Utils.getClipboard(this)
             if (TextUtils.isEmpty(configText)) {
@@ -449,7 +577,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     /**
      * import config from local config file
      */
-    fun importConfigCustomLocal(): Boolean {
+    private fun importConfigCustomLocal(): Boolean {
         try {
             showFileChooser()
         } catch (e: Exception) {
@@ -459,8 +587,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         return true
     }
 
-    fun importConfigCustomUrlClipboard()
-            : Boolean {
+    private fun importConfigCustomUrlClipboard(): Boolean {
         try {
             val url = Utils.getClipboard(this)
             if (TextUtils.isEmpty(url)) {
@@ -477,7 +604,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     /**
      * import config from url
      */
-    fun importConfigCustomUrl(url: String?): Boolean {
+    private fun importConfigCustomUrl(url: String?): Boolean {
         try {
             if (!Utils.isValidUrl(url)) {
                 toast(R.string.toast_invalid_url)
@@ -504,14 +631,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     /**
      * import config from sub
      */
-    fun importConfigViaSub()
-            : Boolean {
+    private fun importConfigViaSub(): Boolean {
         try {
             toast(R.string.title_sub_update)
             MmkvManager.decodeSubscriptions().forEach {
                 if (TextUtils.isEmpty(it.first)
-                        || TextUtils.isEmpty(it.second.remarks)
-                        || TextUtils.isEmpty(it.second.url)
+                    || TextUtils.isEmpty(it.second.remarks)
+                    || TextUtils.isEmpty(it.second.url)
                 ) {
                     return@forEach
                 }
@@ -554,18 +680,24 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         intent.addCategory(Intent.CATEGORY_OPENABLE)
 
         try {
-            chooseFileForCustomConfig.launch(Intent.createChooser(intent, getString(R.string.title_file_chooser)))
+            chooseFileForCustomConfig.launch(
+                Intent.createChooser(
+                    intent,
+                    getString(R.string.title_file_chooser)
+                )
+            )
         } catch (ex: ActivityNotFoundException) {
             toast(R.string.toast_require_file_manager)
         }
     }
 
-    private val chooseFileForCustomConfig = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        val uri = it.data?.data
-        if (it.resultCode == RESULT_OK && uri != null) {
-            readContentFromUri(uri)
+    private val chooseFileForCustomConfig =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val uri = it.data?.data
+            if (it.resultCode == RESULT_OK && uri != null) {
+                readContentFromUri(uri)
+            }
         }
-    }
 
     /**
      * read content from uri
@@ -577,25 +709,25 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
         RxPermissions(this)
-                .request(permission)
-                .subscribe {
-                    if (it) {
-                        try {
-                            contentResolver.openInputStream(uri).use { input ->
-                                importCustomizeConfig(input?.bufferedReader()?.readText())
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+            .request(permission)
+            .subscribe {
+                if (it) {
+                    try {
+                        contentResolver.openInputStream(uri).use { input ->
+                            importCustomizeConfig(input?.bufferedReader()?.readText())
                         }
-                    } else
-                        toast(R.string.toast_permission_denied)
-                }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else
+                    toast(R.string.toast_permission_denied)
+            }
     }
 
     /**
      * import customize config
      */
-    fun importCustomizeConfig(server: String?) {
+    private fun importCustomizeConfig(server: String?) {
         try {
             if (server == null || TextUtils.isEmpty(server)) {
                 toast(R.string.toast_none_data)
@@ -606,24 +738,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             toast(R.string.toast_success)
             //adapter.notifyItemInserted(mainViewModel.serverList.lastIndex)
         } catch (e: Exception) {
-            ToastCompat.makeText(this, "${getString(R.string.toast_malformed_josn)} ${e.cause?.message}", Toast.LENGTH_LONG).show()
+            ToastCompat.makeText(
+                this,
+                "${getString(R.string.toast_malformed_josn)} ${e.cause?.message}",
+                Toast.LENGTH_LONG
+            ).show()
             e.printStackTrace()
             return
         }
     }
 
-    fun setTestState(content: String?) {
+    private fun setTestState(content: String?) {
         binding.tvTestState.text = content
     }
-
-//    val mConnection = object : ServiceConnection {
-//        override fun onServiceDisconnected(name: ComponentName?) {
-//        }
-//
-//        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-//            sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
-//        }
-//    }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B) {
@@ -641,16 +768,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     fun hideCircle() {
         try {
             Observable.timer(300, TimeUnit.MILLISECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe {
-                        try {
-                            if (binding.fabProgressCircle.isShown) {
-                                binding.fabProgressCircle.hide()
-                            }
-                        } catch (e: Exception) {
-                            Log.w(ANG_PACKAGE, e)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    try {
+                        if (binding.fabProgressCircle.isShown) {
+                            binding.fabProgressCircle.hide()
                         }
+                    } catch (e: Exception) {
+                        Log.w(ANG_PACKAGE, e)
                     }
+                }
         } catch (e: Exception) {
             Log.d(ANG_PACKAGE, e.toString())
         }
@@ -673,27 +800,452 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             R.id.sub_setting -> {
                 startActivity(Intent(this, SubSettingActivity::class.java))
             }
+
             R.id.settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java)
-                        .putExtra("isRunning", mainViewModel.isRunning.value == true))
+                startActivity(
+                    Intent(this, SettingsActivity::class.java)
+                        .putExtra("isRunning", mainViewModel.isRunning.value == true)
+                )
             }
+
             R.id.user_asset_setting -> {
                 startActivity(Intent(this, UserAssetActivity::class.java))
             }
+
             R.id.feedback -> {
                 Utils.openUri(this, AppConfig.v2rayNGIssues)
             }
+
             R.id.promotion -> {
-                Utils.openUri(this, "${Utils.decode(AppConfig.promotionUrl)}?t=${System.currentTimeMillis()}")
+                Utils.openUri(
+                    this,
+                    "${Utils.decode(AppConfig.promotionUrl)}?t=${System.currentTimeMillis()}"
+                )
             }
+
             R.id.logcat -> {
                 startActivity(Intent(this, LogcatActivity::class.java))
             }
-            R.id.privacy_policy-> {
+
+            R.id.privacy_policy -> {
                 Utils.openUri(this, AppConfig.v2rayNGPrivacyPolicy)
             }
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    /** My Codes */
+    private fun setHomeLayout() {
+        binding.signupLoginLayout.visibility = View.GONE
+        binding.homeLayout.visibility = View.VISIBLE
+        // TODO: Start here
+        getUserService()
+    }
+
+    private fun getUserService() {
+        binding.checkingServices.visibility = View.VISIBLE
+        mainViewModel.sendGetServiceRequest(user, object : ApiCallback<Service> {
+            override fun onSuccessful(responseObject: Service) {
+                binding.checkingServices.visibility = View.GONE
+                doConfigService(responseObject)
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                if (response?.message == "xuser not found" || response?.message == "service not found") {
+                    binding.checkingServices.visibility = View.VISIBLE
+                    binding.checkingServicesText.text = "در حال تخصیص سرویس"
+                    mainViewModel.sendAllocateServiceRequest(
+                        user,
+                        object : ApiCallback<ResponseMsg> {
+                            override fun onSuccessful(responseObject: ResponseMsg) {
+                                binding.checkingServicesText.text = "در حال دستیابی سرویس"
+                                mainViewModel.sendGetServiceRequest(
+                                    user,
+                                    object : ApiCallback<Service> {
+                                        override fun onSuccessful(responseObject: Service) {
+                                            binding.checkingServices.visibility = View.GONE
+                                            doConfigService(responseObject)
+                                        }
+
+                                        override fun onFailure(
+                                            response: ResponseMsg?,
+                                            t: Throwable?
+                                        ) {
+                                            binding.checkingServices.visibility = View.GONE
+                                            if (response?.message == "xuser not found" || response?.message == "service not found") {
+                                                doPurchaseService()
+                                            } else {
+                                                Toast.makeText(
+                                                    activity,
+                                                    "خطا حین دستیابی به سرویس: ${response?.message}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+
+                                    })
+                            }
+
+                            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                                binding.checkingServices.visibility = View.GONE
+                                if (response?.message == "user not found in service db") {
+                                    doPurchaseService()
+                                } else {
+                                    Toast.makeText(
+                                        activity,
+                                        "خطا حین تخصیص سرویس: ${response?.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+
+                        })
+                } else {
+                    if (response?.message!!.contains("token handle error") || response.message == "user not found") {
+                        Toast.makeText(
+                            activity,
+                            "به دلیل مسائل امنیتی، ملزم به ورود مجدد به برنامه هستید.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        finishAndRemoveTask()
+                    }
+                    binding.checkingServices.visibility = View.GONE
+                    Toast.makeText(
+                        activity,
+                        "خطا حین دستیابی به سرویس: ${response.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+        })
+    }
+
+    fun doConfigService(service: Service) {
+        user = user.copy(service = service)
+        mainViewModel.saveUser(user)
+        mainViewModel.sendGetLinksRequest(user, object : ApiCallback<Service> {
+            override fun onSuccessful(responseObject: Service) {
+                val aLink = responseObject.globalLink
+                if (aLink.startsWith("vless://")) {
+                    val id = aLink.substring(8..43)
+                    var mergedId = ""
+                    id.split("-").forEach {
+                        mergedId += it
+                    }
+                    importBatchConfig(responseObject.globalLink)
+                    mainViewModel.serverList.forEach {
+                        Log.d("TAG", "Server : $it")
+                    }
+                    mainStorage?.encode(
+                        MmkvManager.KEY_SELECTED_SERVER,
+                        mainViewModel.serversCache[0].guid
+                    )
+                    val provider = aLink.substringAfterLast("#").split("-")[0]
+                    user = user.copy(
+                        service = user.service!!.copy(
+                            id = id,
+                            provider = provider,
+                            globalLink = responseObject.globalLink,
+                            localLink = responseObject.localLink
+                        )
+                    )
+                    mainViewModel.saveUser(user)
+                    setConnectionLayout()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "پروتکل ${aLink.substringBefore("://", "unknown")} پشتیبانی نمی شود!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                Toast.makeText(
+                    activity,
+                    "خطا حین دریافت اطلاعات سرویس: ${response?.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        })
+    }
+
+    private fun setConnectionLayout() {
+        binding.connectService.visibility = View.VISIBLE
+    }
+
+    fun doPurchaseService() {
+        mainViewModel.sendGetVSPListRequest(object : ApiCallback<VspList> {
+            override fun onSuccessful(responseObject: VspList) {
+                vspList = responseObject
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                Log.e("TAG", "Failed to fetch virtual service providers list: ${response?.message}")
+            }
+
+        })
+    }
+
+    private fun checkOtpDoLogin(it: String?) {
+        binding.verifyCode.editText?.setText(it)
+        binding.loadingBar.visibility = View.VISIBLE
+        mainViewModel.sendSignInRequest(user.copy(otp = it), object : ApiCallback<User> {
+            override fun onSuccessful(responseObject: User) {
+                binding.loadingBar.visibility = View.GONE
+                user = user.copy(id = responseObject.id, accessToken = responseObject.accessToken)
+                mainViewModel.saveUser(
+                    user.copy(
+                        id = responseObject.id,
+                        accessToken = responseObject.accessToken
+                    )
+                )
+                setHomeLayout()
+                Toast.makeText(activity, "خوش آمدید!", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                binding.loadingBar.visibility = View.GONE
+                if (response != null) {
+                    Toast.makeText(
+                        activity,
+                        "خطای رمز یکبار مصرف: ${response.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+        })
+    }
+
+    private fun onClicks() {
+        binding.resendVerifyCode.setOnClickListener {
+            sendVerifyRequest()
+        }
+        binding.fab.setOnClickListener {
+            if (mainViewModel.isRunning.value == true) {
+                Utils.stopVService(this)
+            } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
+                val intent = VpnService.prepare(this)
+                if (intent == null) {
+                    startV2Ray()
+                } else {
+                    requestVpnPermission.launch(intent)
+                }
+            } else {
+                startV2Ray()
+            }
+        }
+    }
+
+    private fun setLoginLayout() {
+        binding.signupLoginLayout.visibility = View.VISIBLE
+        binding.homeLayout.visibility = View.GONE
+        binding.signupUsername.visibility = View.GONE
+        binding.signupLoginBtn.isEnabled = false
+        binding.signupLoginBtn.text = "ورود به برنامه"
+        binding.signupLoginBtn.icon = AppCompatResources.getDrawable(this, R.drawable.login)!!
+        binding.signupPhone.setEndIconOnClickListener {
+            binding.signupPhone.editText!!.setText(SimUtils.getCurrentSimPhoneNumber(this))
+        }
+        binding.signupPhone.setEndIconOnLongClickListener {
+            Toast.makeText(this, "دریافت شماره سیم کارت اصلی روی گوشی", Toast.LENGTH_SHORT).show()
+            true
+        }
+        binding.signupPhone.editText!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s != null) {
+                    if (s.isNotEmpty()) {
+                        if (s.length == 11) {
+                            if (s.startsWith("09")) {
+                                if (s.isDigitsOnly()) {
+                                    binding.signupPhone.error = null
+                                    binding.signupLoginBtn.isEnabled = true
+                                    return
+                                } else {
+                                    binding.signupPhone.error = "شماره تلفن همراه نامعتبر است!"
+                                }
+                            } else {
+                                binding.signupPhone.error = "شماره تلفن همراه نامعتبر است!"
+                            }
+                        } else {
+                            binding.signupPhone.error = "شماره تلفن همراه، ۱۱ رقمی است!"
+                        }
+                    } else {
+                        binding.signupPhone.error = "شماره تلفن همراه نباید خالی باشد!"
+                    }
+                }
+                binding.signupLoginBtn.isEnabled = false
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+        })
+        binding.signupLoginBtn.setOnClickListener {
+            binding.signupPhone.error = null
+            binding.signupPhone.isEnabled = false
+            binding.signupLoginBtn.isEnabled = false
+            sendVerifyRequest()
+        }
+    }
+
+    private fun setSignUpLayout() {
+        binding.signupUsername.visibility = View.VISIBLE
+        binding.signupLoginBtn.isEnabled = false
+        binding.signupLoginBtn.text = "ثبت نام در برنامه"
+        binding.signupLoginBtn.icon = AppCompatResources.getDrawable(this, R.drawable.signup)!!
+        binding.signupUsername.editText!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s != null) {
+                    if (s.isNotEmpty()) {
+                        binding.signupUsername.error = null
+                        if (binding.signupPhone.error == null && !binding.signupPhone.editText!!.text.isNullOrBlank()) {
+                            binding.signupLoginBtn.isEnabled = true
+                            return
+                        }
+                    } else {
+                        binding.signupUsername.error = "نام و نام خانوادگی نمی تواند خالی باشد!"
+                    }
+                }
+                binding.signupLoginBtn.isEnabled = false
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+        })
+        binding.signupPhone.editText!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s != null) {
+                    if (s.isNotEmpty()) {
+                        if (s.length == 11) {
+                            if (s.startsWith("09")) {
+                                if (s.isDigitsOnly()) {
+                                    binding.signupPhone.error = null
+                                    if (binding.signupUsername.error == null && !binding.signupUsername.editText!!.text.isNullOrBlank()) {
+                                        binding.signupLoginBtn.isEnabled = true
+                                        return
+                                    }
+                                } else {
+                                    binding.signupPhone.error = "شماره تلفن همراه نامعتبر است!"
+                                }
+                            } else {
+                                binding.signupPhone.error = "شماره تلفن همراه نامعتبر است!"
+                            }
+                        } else {
+                            binding.signupPhone.error = "شماره تلفن همراه، ۱۱ رقمی است!"
+                        }
+                    } else {
+                        binding.signupPhone.error = "شماره تلفن همراه نباید خالی باشد!"
+                    }
+                }
+                binding.signupLoginBtn.isEnabled = false
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+        })
+        binding.signupLoginBtn.setOnClickListener {
+            binding.signupUsername.error = null
+            binding.signupPhone.error = null
+            binding.signupUsername.isEnabled = false
+            binding.signupPhone.isEnabled = false
+            binding.signupLoginBtn.isEnabled = false
+            sendSignUpRequest()
+        }
+    }
+
+    private fun sendSignUpRequest() {
+        val username = binding.signupUsername.editText!!.text.toString()
+        val phone = binding.signupPhone.editText!!.text.toString()
+        user = User(userName = username, phoneNumber = phone)
+        binding.loadingBar.visibility = View.VISIBLE
+        //val user2 = mainViewModel.loadUser()!!
+        //Toast.makeText(activity, "Saved User => name: ${user2.userName} || phoneNumber: ${user2.phoneNumber}", Toast.LENGTH_SHORT).show()
+        mainViewModel.sendSignUpRequest(user, object : ApiCallback<ResponseMsg> {
+            override fun onSuccessful(responseObject: ResponseMsg) {
+                binding.signupLoginBtn.isEnabled = true
+                binding.signupUsername.isEnabled = true
+                binding.signupPhone.isEnabled = true
+                sendVerifyRequest()
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                binding.signupUsername.isEnabled = true
+                binding.signupLoginBtn.isEnabled = true
+                binding.signupPhone.isEnabled = true
+                binding.loadingBar.visibility = View.GONE
+                if (response != null) {
+                    if (response.message == "user already exist") {
+                        sendVerifyRequest()
+                    } else {
+                        Toast.makeText(activity, response.message, Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    if (t != null)
+                        Toast.makeText(activity, t.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+    }
+
+    private fun sendVerifyRequest() {
+        val phone = binding.signupPhone.editText!!.text.toString()
+        binding.loadingBar.visibility = View.VISIBLE
+        user = User(phoneNumber = phone)
+        mainViewModel.sendVerifyPhoneRequest(user, object : ApiCallback<ResponseMsg> {
+            override fun onSuccessful(responseObject: ResponseMsg) {
+                binding.signupLayout.visibility = View.GONE
+                binding.verifyLayout.visibility = View.VISIBLE
+                binding.loadingBar.visibility = View.GONE
+                binding.resendVerifyCode.isEnabled = false
+                binding.verifyCode.isEnabled = false
+                binding.resendVerifyCode.text = "ارسال مجدد"
+                binding.resendVerifyCode.icon =
+                    AppCompatResources.getDrawable(activity, R.drawable.resend_otp)!!
+                object : CountDownTimer(120000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        binding.resendVerifyCode.text =
+                            "ارسال مجدد   (${millisUntilFinished.asTime()})"
+                    }
+
+                    override fun onFinish() {
+                        binding.resendVerifyCode.text = "ارسال مجدد"
+                        binding.resendVerifyCode.isEnabled = true
+                    }
+                }.start()
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                binding.signupLoginBtn.isEnabled = true
+                binding.loadingBar.visibility = View.GONE
+                if (response != null) {
+                    if (response.message == "user not found") {
+                        setSignUpLayout()
+                    } else {
+                        binding.signupPhone.isEnabled = true
+                        Toast.makeText(activity, response.message, Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    if (t != null)
+                        Toast.makeText(activity, t.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        })
     }
 }

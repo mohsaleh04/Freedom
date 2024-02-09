@@ -8,6 +8,7 @@ import me.drakeet.support.toast.ToastCompat
 import org.json.JSONObject
 import java.net.URI
 import java.net.URLConnection
+import java.util.Locale
 
 /**
  * Some extensions
@@ -81,4 +82,15 @@ val URI.idnHost: String
 
 fun String.removeWhiteSpace(): String {
     return this.replace(" ", "")
+}
+
+
+fun Long.asTime(): String {
+    val minutes = this / 60000
+    val seconds = this % 60000 / 1000
+    return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+}
+
+fun String.asToken(): String {
+    return "bearer $this"
 }

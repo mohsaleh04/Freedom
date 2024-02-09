@@ -5,6 +5,7 @@ import com.tencent.mmkv.MMKV
 import ir.saltech.freedom.dto.ServerAffiliationInfo
 import ir.saltech.freedom.dto.ServerConfig
 import ir.saltech.freedom.dto.SubscriptionItem
+import ir.saltech.freedom.dto.user.User
 
 object MmkvManager {
     const val ID_MAIN = "MAIN"

@@ -6,10 +6,14 @@
     <color name="colorSelected">#FFFFFF</color>
     <color name="colorUnselected">#222222</color>
 
-    <color name="colorPrimary">#222222</color>
-    <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#FFFFFF</color>
-    <color name="colorBg">#000000</color>
-    <color name="colorText">#FFFFFF</color>
-    <color name="colorMainTestBg">#222222</color>
+    <color name="colorPrimary">#e58e26</color>
+    <color name="colorPrimaryDark">#e58e26</color>
+    <color name="colorAccent">#e58e26</color>
+    <color name="colorBg">#291914</color>
+    <color name="colorText">#BDC3C7</color>
+    <color name="colorMainTestBg">#F0F1F6</color>
+    <color name="disable_button">#C0BEBEBE</color>
+    <color name="colorError">#EF5350</color>
+    <color name="primary_button_bg">#33009688</color>
+    <color name="disable_button_fade">#26BEBEBE</color>
 </resources>
