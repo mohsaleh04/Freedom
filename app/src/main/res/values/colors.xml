@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPing">#009966</color>
     <color name="colorPingRed">#FF0099</color>
-    <color name="color_fab_orange">#f97910</color>
+    <color name="color_fab_orange">#FD7E14</color>
 
     <color name="color_switch_fab_grey">#CDCDCD</color>
     <color name="color_fab_grey">#9C9C9C</color>

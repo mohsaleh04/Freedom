@@ -1,9 +1,13 @@
 package ir.saltech.freedom.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
 import android.net.Uri
 import android.net.VpnService
 import android.os.Build
@@ -34,6 +38,7 @@ import com.tbruyelle.rxpermissions.RxPermissions
 import com.tencent.mmkv.MMKV
 import ir.saltech.freedom.AppConfig
 import ir.saltech.freedom.AppConfig.ANG_PACKAGE
+import ir.saltech.freedom.AppConfig.PREF_SPEED_ENABLED
 import ir.saltech.freedom.BuildConfig
 import ir.saltech.freedom.R
 import ir.saltech.freedom.databinding.ActivityMainBinding
@@ -49,6 +54,7 @@ import ir.saltech.freedom.helper.SimpleItemTouchHelperCallback
 import ir.saltech.freedom.service.V2RayServiceManager
 import ir.saltech.freedom.util.AngConfigManager
 import ir.saltech.freedom.util.MmkvManager
+import ir.saltech.freedom.util.NetworkMonitor
 import ir.saltech.freedom.util.SimUtils
 import ir.saltech.freedom.util.SpeedtestUtil
 import ir.saltech.freedom.util.Utils
@@ -62,10 +68,17 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
+private const val OTP_EXPIRATION_TIME: Long = 120000
+
+var isDisconnectingServer = false
+
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private var userInitialized: Boolean = false
+    private var connectLevel: Int = 0
     private lateinit var binding: ActivityMainBinding
     private lateinit var user: User
     private lateinit var vspList: VspList
+    private var startupCheckLink: Boolean = true
     private val activity = this
     private val adapter by lazy { MainRecyclerAdapter(this) }
     private val mainStorage by lazy {
@@ -88,6 +101,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     private var mItemTouchHelper: ItemTouchHelper? = null
     val mainViewModel: MainViewModel by viewModels()
+    private val networkCallback = object : NetworkCallback() {
+
+        override fun onAvailable(network: Network) {
+            mainViewModel.updateConnectivityAction.postValue(true)
+            settingsStorage?.encode(PREF_SPEED_ENABLED, true)
+        }
+
+        override fun onLost(network: Network) {
+            if (!isDisconnectingServer) {
+                mainViewModel.updateConnectivityAction.postValue(false)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,28 +122,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         setContentView(view)
         title = getString(R.string.title_server)
         setSupportActionBar(binding.toolbar)
-        binding.fab.setOnClickListener {
-            if (mainViewModel.isRunning.value == true) {
-                Utils.stopVService(this)
-            } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
-                val intent = VpnService.prepare(this)
-                if (intent == null) {
-                    startV2Ray()
-                } else {
-                    requestVpnPermission.launch(intent)
-                }
-            } else {
-                startV2Ray()
-            }
-        }
-        binding.layoutTest.setOnClickListener {
-            if (mainViewModel.isRunning.value == true) {
-                setTestState(getString(R.string.connection_test_testing))
-                mainViewModel.testCurrentServerRealPing()
-            } else {
-//                tv_test_state.text = getString(R.string.connection_test_fail)
-            }
-        }
 
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -141,28 +145,31 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})".also {
             binding.version.text = it
         }
+        mainViewModel.updateConnectivityAction.value = NetworkMonitor(this).isNetworkAvailable()
+        settingsStorage?.encode(PREF_SPEED_ENABLED, true)
         getPermissions()
         setupViewModel()
-        getUserDefaults()
         onClicks()
         copyAssets()
         migrateLegacy()
 
-
     }
 
     private fun getUserDefaults() {
-        try {
-			MmkvManager.removeAllServer()
-		} catch (e: Exception) {
-			e.printStackTrace()
-		}
-        val loadedUser = mainViewModel.loadUser()
-        if (loadedUser == null) {
-            setLoginLayout()
-        } else {
-            user = loadedUser
-            setHomeLayout()
+        if (!userInitialized) {
+            try {
+                MmkvManager.removeAllServer()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            val loadedUser = mainViewModel.loadUser()
+            if (loadedUser == null) {
+                setLoginLayout()
+            } else {
+                user = loadedUser
+                setHomeLayout()
+            }
+            userInitialized = true
         }
     }
 
@@ -218,6 +225,14 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun setupViewModel() {
         mainViewModel.context = this
+        mainViewModel.updateConnectivityAction.observe(this) {
+            if (it) {
+                binding.noInternetConnection.visibility = View.GONE
+                getUserDefaults()
+            } else {
+                binding.noInternetConnection.visibility = View.VISIBLE
+            }
+        }
         mainViewModel.updateOtpAction.observe(this) {
             checkOtpDoLogin(it)
         }
@@ -228,29 +243,161 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 adapter.notifyDataSetChanged()
             }
         }
-        mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
+        mainViewModel.updateTestResultAction.observe(this) {
+            if (it.toLongOrNull() != null) {
+                connectLevel = 1
+                binding.fab.setImageResource(R.drawable.service_connected)
+                binding.fab.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
+                binding.connectServiceStatus.setTextColor(
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
+                )
+                binding.connectServiceStatus.text = "متصل به سرور"
+                setTestState(getString(R.string.connection_connected))
+                binding.layoutTest.isFocusable = true
+                binding.tryingToConnectService.visibility = View.GONE
+                binding.networkPingLayout.visibility = View.VISIBLE
+                binding.networkPingImg.setImageDrawable(getPingStatus(it.toLong()))
+                binding.networkPingText.text = "$it   ms"
+                Observable.timer(3000, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        if (mainViewModel.isRunning.value == true) {
+                            mainViewModel.testCurrentServerRealPing()
+                        }
+                    }
+            } else {
+                Log.i("SERVER_CONNECTION", "Connection failed: $it")
+                if (it != "اتصال به اینترنت شناسایی نشد:  context canceled") {
+                    Utils.stopVService(this, mainViewModel)
+                    if (it != "اتصال به اینترنت شناسایی نشد:  io: read/write on closed pipe") {
+                        if (startupCheckLink) {
+                            // If the current link (global link) is corrupt, uses the tunnel link
+                            MmkvManager.removeAllServer()
+                            setupLink(user.service!!.localLink)
+                            startupCheckLink = false
+                            startConnection()
+                            toast("Now using tunnel!")
+                        } else {
+                            AlertDialog.Builder(this)
+                                .setIcon(R.drawable.failed_to_connect)
+                                .setTitle("عدم توانایی اتصال به سرویس")
+                                .setMessage("\nبه علت خطای زیر\n$it:در اتصال به سرور ناتوان بود!\nبرای اطلاعات بیشتر با پشتیبانی در تماس باشید.")
+                                .setPositiveButton("متوجه شدم") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
+                    }
+                }
+            }
+        }
         mainViewModel.isRunning.observe(this) { isRunning ->
             adapter.isRunning = isRunning
             if (isRunning) {
-                if (!Utils.getDarkModeStatus(this)) {
-                    binding.fab.setImageResource(R.drawable.ic_stat_name)
-                }
-                binding.fab.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
-                setTestState(getString(R.string.connection_connected))
-                binding.layoutTest.isFocusable = true
+                binding.tryingToConnectService.visibility = View.VISIBLE
+                binding.connectServiceStatus.text = "در حال اتصال ..."
+                connectLevel = 0
+                showTitleConnectingEffect()
+                mainViewModel.testCurrentServerRealPing()
+                //binding.checkConnectionPing.isEnabled = true
             } else {
-                if (!Utils.getDarkModeStatus(this)) {
-                    binding.fab.setImageResource(R.drawable.ic_stat_name)
-                }
+                binding.fab.setImageResource(R.drawable.service_not_connected)
                 binding.fab.backgroundTintList =
                     ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
+                binding.connectServiceStatus.setTextColor(
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
+                )
+                binding.tryingToConnectService.visibility = View.GONE
+                binding.connectServiceStatus.text = "اتصال به سرور"
+                binding.networkPingLayout.visibility = View.GONE
+                binding.networkPingText.text = "   ..."
+                binding.networkPingImg.setImageResource(R.drawable.gathering_network_ping)
                 setTestState(getString(R.string.connection_not_connected))
                 binding.layoutTest.isFocusable = false
+                connectLevel = -1
+                //binding.checkConnectionPing.isEnabled = false
             }
             hideCircle()
         }
         mainViewModel.startListenBroadcast()
+    }
+
+    private fun showTitleConnectingEffect() {
+        if (connectLevel == 0) {
+            Observable.timer(500, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    binding.connectServiceStatus.setTextColor(
+                        ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                this,
+                                android.R.color.white
+                            )
+                        )
+                    )
+                    if (connectLevel == 0) {
+                        Observable.timer(500, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe {
+                                binding.connectServiceStatus.setTextColor(
+                                    ColorStateList.valueOf(
+                                        ContextCompat.getColor(this, R.color.color_fab_grey)
+                                    )
+                                )
+                                if (connectLevel == 0) {
+                                    showTitleConnectingEffect()
+                                } else if (connectLevel == 1) {
+                                    binding.connectServiceStatus.setTextColor(
+                                        ColorStateList.valueOf(
+                                            ContextCompat.getColor(this, R.color.color_fab_orange)
+                                        )
+                                    )
+                                } else {
+                                    binding.connectServiceStatus.setTextColor(
+                                        ColorStateList.valueOf(
+                                            ContextCompat.getColor(this, R.color.color_fab_grey)
+                                        )
+                                    )
+                                }
+                            }
+                    } else if (connectLevel == 1) {
+                        binding.connectServiceStatus.setTextColor(
+                            ColorStateList.valueOf(
+                                ContextCompat.getColor(this, R.color.color_fab_orange)
+                            )
+                        )
+                    } else {
+                        binding.connectServiceStatus.setTextColor(
+                            ColorStateList.valueOf(
+                                ContextCompat.getColor(this, R.color.color_fab_grey)
+                            )
+                        )
+                    }
+                }
+        } else if (connectLevel == 1) {
+            binding.connectServiceStatus.setTextColor(
+                ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.color_fab_orange)
+                )
+            )
+        } else {
+            binding.connectServiceStatus.setTextColor(
+                ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.color_fab_grey)
+                )
+            )
+        }
+    }
+
+    private fun getPingStatus(ping: Long): Drawable {
+        return when (ping) {
+            in 1..100 -> ContextCompat.getDrawable(this, R.drawable.network_ping_excellent)!!
+            in 101..600 -> ContextCompat.getDrawable(this, R.drawable.network_ping_good)!!
+            in 601..1000 -> ContextCompat.getDrawable(this, R.drawable.network_ping_normal)!!
+            in 1001..2500 -> ContextCompat.getDrawable(this, R.drawable.network_ping_bad)!!
+            else -> ContextCompat.getDrawable(this, R.drawable.network_ping_very_bad)!!
+        }
     }
 
     private fun copyAssets() {
@@ -307,7 +454,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun restartV2Ray() {
         if (mainViewModel.isRunning.value == true) {
-            Utils.stopVService(this)
+            Utils.stopVService(this, mainViewModel)
         }
         Observable.timer(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
@@ -318,11 +465,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     public override fun onResume() {
         super.onResume()
+        NetworkMonitor(this).registerNetworkCallback(networkCallback)
         mainViewModel.reloadServerList()
     }
 
     public override fun onPause() {
         super.onPause()
+        NetworkMonitor(this).unregisterNetworkCallback(networkCallback)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -552,10 +701,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             count = AngConfigManager.appendCustomConfigServer(server, subid2)
         }
         if (count > 0) {
-            toast(R.string.toast_success)
+            //toast(R.string.toast_success)
+            Log.i("IMPORT_CONFIG", getString(R.string.toast_success))
             mainViewModel.reloadServerList()
         } else {
-            toast(R.string.toast_failure)
+            Log.e("IMPORT_CONFIG", getString(R.string.toast_failure))
+            //toast(R.string.toast_failure)
         }
     }
 
@@ -783,6 +934,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -902,7 +1054,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                         })
                 } else {
-                    if (response?.message!!.contains("token handle error") || response.message == "user not found") {
+                    if (response?.message?.contains("token handle error") == true || response?.message == "user not found") {
                         Toast.makeText(
                             activity,
                             "به دلیل مسائل امنیتی، ملزم به ورود مجدد به برنامه هستید.",
@@ -913,7 +1065,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     binding.checkingServices.visibility = View.GONE
                     Toast.makeText(
                         activity,
-                        "خطا حین دستیابی به سرویس: ${response.message}",
+                        "خطا حین دستیابی به سرویس: ${response?.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -934,14 +1086,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     id.split("-").forEach {
                         mergedId += it
                     }
-                    importBatchConfig(responseObject.globalLink)
-                    mainViewModel.serverList.forEach {
-                        Log.d("TAG", "Server : $it")
-                    }
-                    mainStorage?.encode(
-                        MmkvManager.KEY_SELECTED_SERVER,
-                        mainViewModel.serversCache[0].guid
-                    )
+                    setupLink(aLink)
                     val provider = aLink.substringAfterLast("#").split("-")[0]
                     user = user.copy(
                         service = user.service!!.copy(
@@ -971,6 +1116,14 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
 
         })
+    }
+
+    private fun setupLink(aLink: String) {
+        importBatchConfig(aLink)
+        mainStorage?.encode(
+            MmkvManager.KEY_SELECTED_SERVER,
+            mainViewModel.serversCache[0].guid
+        )
     }
 
     private fun setConnectionLayout() {
@@ -1026,18 +1179,29 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             sendVerifyRequest()
         }
         binding.fab.setOnClickListener {
+            startConnection()
+        }
+        binding.checkConnectionPing.setOnClickListener {
             if (mainViewModel.isRunning.value == true) {
-                Utils.stopVService(this)
-            } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
-                val intent = VpnService.prepare(this)
-                if (intent == null) {
-                    startV2Ray()
-                } else {
-                    requestVpnPermission.launch(intent)
-                }
-            } else {
-                startV2Ray()
+                binding.checkConnectionPing.text = "در حال بررسی ..."
+                binding.checkConnectionPing.isEnabled = false
+                mainViewModel.testCurrentServerRealPing()
             }
+        }
+    }
+
+    private fun startConnection() {
+        if (mainViewModel.isRunning.value == true) {
+            Utils.stopVService(this, mainViewModel)
+        } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
+            val intent = VpnService.prepare(this)
+            if (intent == null) {
+                startV2Ray()
+            } else {
+                requestVpnPermission.launch(intent)
+            }
+        } else {
+            startV2Ray()
         }
     }
 
@@ -1217,7 +1381,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 binding.resendVerifyCode.text = "ارسال مجدد"
                 binding.resendVerifyCode.icon =
                     AppCompatResources.getDrawable(activity, R.drawable.resend_otp)!!
-                object : CountDownTimer(120000, 1000) {
+                object : CountDownTimer(OTP_EXPIRATION_TIME, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
                         binding.resendVerifyCode.text =
                             "ارسال مجدد   (${millisUntilFinished.asTime()})"

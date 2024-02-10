@@ -396,12 +396,11 @@
             android:background="@color/colorBg"
             android:clickable="true"
             android:focusable="true"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-
 
             <LinearLayout
                 android:id="@+id/checking_services"
@@ -441,21 +440,21 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1.0">
 
 
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/connect_service_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/peyda_bold"
-                    android:text="اتصال به سرور"
                     android:textAlignment="center"
-                    android:textColor="@color/colorAccent"
                     android:textSize="36sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
@@ -463,16 +462,28 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <ProgressBar
+                    android:id="@+id/trying_to_connect_service"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:scaleX="1.15"
+                    android:scaleY="1.15"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@+id/fabProgressCircle"
+                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                    app:layout_constraintTop_toTopOf="@+id/fabProgressCircle" />
+
                 <com.github.jorgecastilloprz.FABProgressCircle
                     android:id="@+id/fabProgressCircle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginBottom="24dp"
-                    app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent">
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/fab"
@@ -497,9 +508,88 @@
                         app:maxImageSize="115dp" />
 
                 </com.github.jorgecastilloprz.FABProgressCircle>
+
+                <ir.saltech.freedom.ui.view.RowButton
+                    android:id="@+id/check_connection_ping"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:src="@drawable/check_network_ping"
+                    android:text="@string/check_connection_ping_text"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                    app:layout_constraintTop_toBottomOf="@+id/fabProgressCircle"
+                    app:layout_constraintVertical_bias="0.29000002" />
+
+                <LinearLayout
+                    android:id="@+id/network_ping_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="@id/fabProgressCircle"
+                    app:layout_constraintRight_toRightOf="@id/fabProgressCircle"
+                    app:layout_constraintTop_toBottomOf="@id/fabProgressCircle">
+
+                    <ImageView
+                        android:id="@+id/network_ping_img"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/gathering_network_ping"
+                        app:tint="@color/color_secondary" />
+
+                    <TextView
+                        android:id="@+id/network_ping_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/peyda_black"
+                        android:text="   ..."
+                        android:textColor="@color/color_secondary"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:id="@+id/no_internet_connection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorBg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/no_internet_img"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/no_internet_connection"
+                app:tint="@color/color_secondary" />
+
+            <TextView
+                android:id="@+id/no_internet_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:fontFamily="@font/peyda_black"
+                android:text="اینترنت در دسترس نمی باشد!"
+                android:textColor="@color/color_secondary"
+                android:textSize="18sp" />
+
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

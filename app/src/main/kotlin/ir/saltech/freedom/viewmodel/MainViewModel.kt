@@ -66,6 +66,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isRunning by lazy { MutableLiveData<Boolean>() }
     val updateListAction by lazy { MutableLiveData<Int>() }
     val updateTestResultAction by lazy { MutableLiveData<String>() }
+    val updateConnectivityAction by lazy { MutableLiveData<Boolean>() }
     var context: Context? = null
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
     val updateOtpAction by lazy { MutableLiveData<String>() }
@@ -305,7 +306,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 AppConfig.MSG_STATE_START_SUCCESS -> {
-                    getApplication<AngApplication>().toast(R.string.toast_services_success)
+                    //getApplication<AngApplication>().toast(R.string.toast_services_success)
+                    Log.i("START_SERVICE", getApplication<AngApplication>().getString(R.string.toast_services_success))
                     isRunning.value = true
                 }
 
