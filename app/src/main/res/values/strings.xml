@@ -219,13 +219,13 @@
     <string name="connection_not_connected">متصل نیست</string>
 
     <string-array name="share_method">
-        <item>QRcode</item>
+        <item>دریافت عکس رمزینه</item>
         <item>خروجی گرفتن در کلیپ‌بورد</item>
-        <item>خروجی گرفتن پیکربندی کامل در کلیپ‌بورد</item>
+<!--        <item>خروجی گرفتن پیکربندی کامل در کلیپ‌بورد</item>-->
     </string-array>
 
     <string-array name="share_sub_method">
-        <item>QRcode</item>
+        <item>دریافت رمزینه</item>
         <item>خروجی گرفتن در کلیپ‌بورد</item>
     </string-array>
 

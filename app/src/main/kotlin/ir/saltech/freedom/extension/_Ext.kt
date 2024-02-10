@@ -94,3 +94,15 @@ fun Long.asTime(): String {
 fun String.asToken(): String {
     return "bearer $this"
 }
+
+fun String.mergedId(): String? {
+    if (this.contains("-")) {
+        var mergedId = ""
+        this.split("-").forEach {
+            mergedId += it
+        }
+        return mergedId
+    } else {
+        return null
+    }
+}

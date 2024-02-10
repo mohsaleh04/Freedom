@@ -18,6 +18,7 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -42,6 +43,7 @@ import ir.saltech.freedom.AppConfig.PREF_SPEED_ENABLED
 import ir.saltech.freedom.BuildConfig
 import ir.saltech.freedom.R
 import ir.saltech.freedom.databinding.ActivityMainBinding
+import ir.saltech.freedom.databinding.ItemQrcodeBinding
 import ir.saltech.freedom.dto.EConfigType
 import ir.saltech.freedom.dto.api.ApiCallback
 import ir.saltech.freedom.dto.api.ResponseMsg
@@ -49,6 +51,7 @@ import ir.saltech.freedom.dto.user.Service
 import ir.saltech.freedom.dto.user.User
 import ir.saltech.freedom.dto.user.VspList
 import ir.saltech.freedom.extension.asTime
+import ir.saltech.freedom.extension.mergedId
 import ir.saltech.freedom.extension.toast
 import ir.saltech.freedom.helper.SimpleItemTouchHelperCallback
 import ir.saltech.freedom.service.V2RayServiceManager
@@ -73,6 +76,7 @@ private const val OTP_EXPIRATION_TIME: Long = 120000
 var isDisconnectingServer = false
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private var usingLocalLink: Boolean = false
     private var userInitialized: Boolean = false
     private var connectLevel: Int = 0
     private lateinit var binding: ActivityMainBinding
@@ -258,6 +262,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 binding.tryingToConnectService.visibility = View.GONE
                 binding.networkPingLayout.visibility = View.VISIBLE
                 binding.networkPingImg.setImageDrawable(getPingStatus(it.toLong()))
+                binding.showLinksBtn.visibility = View.VISIBLE
+                binding.connectionTypeLayout.visibility = View.VISIBLE
+                if (usingLocalLink)
+                    binding.connectionTypeSchema.setImageResource(R.drawable.using_tunnelling)
+                else
+                    binding.connectionTypeSchema.setImageResource(R.drawable.using_direct)
                 binding.networkPingText.text = "$it   ms"
                 Observable.timer(3000, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -277,6 +287,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             setupLink(user.service!!.localLink)
                             startupCheckLink = false
                             startConnection()
+                            usingLocalLink = true
                             toast("Now using tunnel!")
                         } else {
                             AlertDialog.Builder(this)
@@ -313,6 +324,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 binding.networkPingLayout.visibility = View.GONE
                 binding.networkPingText.text = "   ..."
                 binding.networkPingImg.setImageResource(R.drawable.gathering_network_ping)
+                binding.connectionTypeLayout.visibility = View.GONE
+                binding.shareLinkLayout.visibility = View.GONE
+                binding.showLinksBtn.visibility = View.GONE
                 setTestState(getString(R.string.connection_not_connected))
                 binding.layoutTest.isFocusable = false
                 connectLevel = -1
@@ -324,69 +338,77 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun showTitleConnectingEffect() {
-        if (connectLevel == 0) {
-            Observable.timer(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    binding.connectServiceStatus.setTextColor(
-                        ColorStateList.valueOf(
-                            ContextCompat.getColor(
-                                this,
-                                android.R.color.white
+        when (connectLevel) {
+            0 -> {
+                Observable.timer(500, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        binding.connectServiceStatus.setTextColor(
+                            ColorStateList.valueOf(
+                                ContextCompat.getColor(
+                                    this,
+                                    android.R.color.white
+                                )
                             )
                         )
-                    )
-                    if (connectLevel == 0) {
-                        Observable.timer(500, TimeUnit.MILLISECONDS)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe {
+                        when (connectLevel) {
+                            0 -> {
+                                Observable.timer(500, TimeUnit.MILLISECONDS)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe {
+                                        binding.connectServiceStatus.setTextColor(
+                                            ColorStateList.valueOf(
+                                                ContextCompat.getColor(this, R.color.color_fab_grey)
+                                            )
+                                        )
+                                        if (connectLevel == 0) {
+                                            showTitleConnectingEffect()
+                                        } else if (connectLevel == 1) {
+                                            binding.connectServiceStatus.setTextColor(
+                                                ColorStateList.valueOf(
+                                                    ContextCompat.getColor(this, R.color.color_fab_orange)
+                                                )
+                                            )
+                                        } else {
+                                            binding.connectServiceStatus.setTextColor(
+                                                ColorStateList.valueOf(
+                                                    ContextCompat.getColor(this, R.color.color_fab_grey)
+                                                )
+                                            )
+                                        }
+                                    }
+                            }
+                            1 -> {
+                                binding.connectServiceStatus.setTextColor(
+                                    ColorStateList.valueOf(
+                                        ContextCompat.getColor(this, R.color.color_fab_orange)
+                                    )
+                                )
+                            }
+                            else -> {
                                 binding.connectServiceStatus.setTextColor(
                                     ColorStateList.valueOf(
                                         ContextCompat.getColor(this, R.color.color_fab_grey)
                                     )
                                 )
-                                if (connectLevel == 0) {
-                                    showTitleConnectingEffect()
-                                } else if (connectLevel == 1) {
-                                    binding.connectServiceStatus.setTextColor(
-                                        ColorStateList.valueOf(
-                                            ContextCompat.getColor(this, R.color.color_fab_orange)
-                                        )
-                                    )
-                                } else {
-                                    binding.connectServiceStatus.setTextColor(
-                                        ColorStateList.valueOf(
-                                            ContextCompat.getColor(this, R.color.color_fab_grey)
-                                        )
-                                    )
-                                }
                             }
-                    } else if (connectLevel == 1) {
-                        binding.connectServiceStatus.setTextColor(
-                            ColorStateList.valueOf(
-                                ContextCompat.getColor(this, R.color.color_fab_orange)
-                            )
-                        )
-                    } else {
-                        binding.connectServiceStatus.setTextColor(
-                            ColorStateList.valueOf(
-                                ContextCompat.getColor(this, R.color.color_fab_grey)
-                            )
-                        )
+                        }
                     }
-                }
-        } else if (connectLevel == 1) {
-            binding.connectServiceStatus.setTextColor(
-                ColorStateList.valueOf(
-                    ContextCompat.getColor(this, R.color.color_fab_orange)
+            }
+            1 -> {
+                binding.connectServiceStatus.setTextColor(
+                    ColorStateList.valueOf(
+                        ContextCompat.getColor(this, R.color.color_fab_orange)
+                    )
                 )
-            )
-        } else {
-            binding.connectServiceStatus.setTextColor(
-                ColorStateList.valueOf(
-                    ContextCompat.getColor(this, R.color.color_fab_grey)
+            }
+            else -> {
+                binding.connectServiceStatus.setTextColor(
+                    ColorStateList.valueOf(
+                        ContextCompat.getColor(this, R.color.color_fab_grey)
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -1082,10 +1104,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 val aLink = responseObject.globalLink
                 if (aLink.startsWith("vless://")) {
                     val id = aLink.substring(8..43)
-                    var mergedId = ""
-                    id.split("-").forEach {
-                        mergedId += it
-                    }
                     setupLink(aLink)
                     val provider = aLink.substringAfterLast("#").split("-")[0]
                     user = user.copy(
@@ -1187,6 +1205,45 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 binding.checkConnectionPing.isEnabled = false
                 mainViewModel.testCurrentServerRealPing()
             }
+        }
+        binding.connectionTypeLayout.setOnClickListener {
+            if (usingLocalLink)
+                Toast.makeText(this, "اتصال شما به صورت واسط است.", Toast.LENGTH_SHORT).show()
+            else
+                Toast.makeText(this, "اتصال شما به صورت مستقیم است.", Toast.LENGTH_SHORT).show()
+        }
+        binding.showLinksBtn.setOnClickListener {
+            binding.shareLinkText.text = if (usingLocalLink) user.service?.localLink else user.service?.globalLink
+            binding.shareLinkLayout.visibility = View.VISIBLE
+            Observable.timer(5000, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    binding.shareLinkLayout.visibility = View.GONE
+                }
+        }
+        binding.shareLinkLayout.setOnClickListener {
+            val shareOptions = resources.getStringArray(R.array.share_method).asList()
+            AlertDialog.Builder(this).setItems(shareOptions.toTypedArray()) { _, i ->
+                try {
+                    when (i) {
+                        0 -> {
+                            val ivBinding = ItemQrcodeBinding.inflate(LayoutInflater.from(this))
+                            ivBinding.ivQcode.setImageBitmap(AngConfigManager.share2QRCode(mainViewModel.serversCache[0].guid))
+                            AlertDialog.Builder(this).setView(ivBinding.root).show()
+                        }
+                        1 -> {
+                            if (AngConfigManager.share2Clipboard(this, mainViewModel.serversCache[0].guid) == 0) {
+                                toast("لینک در کلیپ بورد، کپی شد.")
+                            } else {
+                                toast(R.string.toast_failure)
+                            }
+                        }
+                        2 -> Toast.makeText(this, "این قابلیت پشتیبانی نمی شود", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }.show()
         }
     }
 

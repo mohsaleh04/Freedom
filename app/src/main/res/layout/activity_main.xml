@@ -462,6 +462,47 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <LinearLayout
+                    android:id="@+id/connection_type_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="horizontal"
+                    android:scaleX="1.05"
+                    android:scaleY="1.05"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
+                    app:layout_constraintEnd_toEndOf="@+id/connect_service_status"
+                    app:layout_constraintStart_toStartOf="@+id/connect_service_status"
+                    app:layout_constraintTop_toBottomOf="@+id/connect_service_status">
+
+                    <ImageView
+                        android:id="@+id/laptop_schema"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/client_scheme"
+                        app:tint="@color/color_secondary" />
+
+                    <ImageView
+                        android:id="@+id/connection_type_schema"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:rotation="90"
+                        app:srcCompat="@drawable/using_direct"
+                        app:tint="@color/color_secondary" />
+
+                    <ImageView
+                        android:id="@+id/imageView4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:srcCompat="@drawable/net_scheme"
+                        app:tint="@color/color_secondary" />
+                </LinearLayout>
+
                 <ProgressBar
                     android:id="@+id/trying_to_connect_service"
                     android:layout_width="0dp"
@@ -527,9 +568,10 @@
                     android:id="@+id/network_ping_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:visibility="gone"
                     app:layout_constraintLeft_toLeftOf="@id/fabProgressCircle"
                     app:layout_constraintRight_toRightOf="@id/fabProgressCircle"
                     app:layout_constraintTop_toBottomOf="@id/fabProgressCircle">
@@ -552,6 +594,55 @@
                         android:textColor="@color/color_secondary"
                         android:textSize="18sp" />
 
+                </LinearLayout>
+
+                <ir.saltech.freedom.ui.view.RowButton
+                    android:id="@+id/show_links_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/show_links"
+                    android:text="نمایش لینک"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                    app:layout_constraintTop_toBottomOf="@+id/network_ping_layout"
+                    app:layout_constraintVertical_bias="0.4" />
+
+                <LinearLayout
+                    android:id="@+id/share_link_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/row_button_bg"
+                    android:backgroundTint="#323232"
+                    android:backgroundTintMode="src_in"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingLeft="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingRight="16dp"
+                    android:paddingBottom="13dp"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@+id/show_links_btn"
+                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                    app:layout_constraintTop_toTopOf="@+id/show_links_btn">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        app:srcCompat="@drawable/ic_share_24dp"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:id="@+id/share_link_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:singleLine="true"
+                        android:text="YOUR_LINK"
+                        android:textColor="@color/white" />
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
