@@ -2,7 +2,7 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "ir.saltech.freedom.test",
+    "package_name": "ir.saltech.prox",
     "sha256_cert_fingerprints":
     ["7E:A9:48:19:87:47:25:7E:C2:10:BA:0E:AE:1B:B3:E5:51:65:EB:9D:C2:91:A9:C5:8B:5A:22:35:60:70:5F:07"]
   }

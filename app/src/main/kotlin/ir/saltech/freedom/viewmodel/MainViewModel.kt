@@ -347,30 +347,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun sendSignUpRequest(user: User, callback: ApiCallback<ResponseMsg>) {
-        ApiClient.freedom.signUp(user.copy(job = ir.saltech.freedom.dto.user.Job.SignUp)).call(callback)
+        ApiClient.freedom.signUp(user.copy(job = ir.saltech.freedom.dto.user.Job.SignUp)).call(
+            callback
+        )
     }
 
     fun sendVerifyPhoneRequest(user: User, callback: ApiCallback<ResponseMsg>) {
-        ApiClient.freedom.verifyPhone(user.copy(job = ir.saltech.freedom.dto.user.Job.Verify)).call(callback)
+        ApiClient.freedom.verifyPhone(user.copy(job = ir.saltech.freedom.dto.user.Job.Verify)).call(
+            callback
+        )
     }
 
     fun sendSignInRequest(user: User, callback: ApiCallback<User>) {
-        ApiClient.freedom.signIn(user.copy(job = ir.saltech.freedom.dto.user.Job.SignIn)).call(callback)
+        ApiClient.freedom.signIn(user.copy(job = ir.saltech.freedom.dto.user.Job.SignIn)).call(
+            callback
+        )
     }
 
     fun sendGetServiceRequest(user: User, callback: ApiCallback<Service>) {
         if (user.accessToken != null)
-            ApiClient.freedom.getService(user.accessToken.asToken(), user).call(callback, true)
+            ApiClient.freedom.getService(user.accessToken.asToken(), user).call(callback)
     }
 
     fun sendAllocateServiceRequest(user: User, callback: ApiCallback<ResponseMsg>) {
         if (user.accessToken != null)
-            ApiClient.freedom.allocateService(user.accessToken.asToken(), user).call(callback, true)
+            ApiClient.freedom.allocateService(user.accessToken.asToken(), user).call(callback)
     }
 
     fun sendGetLinksRequest(user: User, callback: ApiCallback<Service>) {
         if (user.accessToken != null)
-            ApiClient.freedom.getLinks(user.accessToken.asToken(), user).call(callback, true)
+            ApiClient.freedom.getLinks(user.accessToken.asToken(), user).call(callback)
     }
 
     fun sendGetVSPListRequest(callback: ApiCallback<VspList>) {
@@ -379,12 +385,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun sendCalculatePriceRequest(user: User, callback: ApiCallback<Service>) {
         if (user.accessToken != null)
-            ApiClient.freedom.calculatePrice(user.accessToken.asToken(), user.service!!).call(callback, true)
+            ApiClient.freedom.calculatePrice(user.accessToken.asToken(), user.service!!).call(
+                callback
+            )
     }
 
     fun sendPurchaseServiceRequest(user: User, callback: ApiCallback<ResponseMsg>) {
         if (user.accessToken != null)
-            ApiClient.freedom.purchaseService(user.accessToken.asToken(), user.service!!).call(callback, true)
+            ApiClient.freedom.purchaseService(user.accessToken.asToken(), user.service!!).call(
+                callback
+            )
     }
 
     fun sendBeginPaymentRequest(payment: Payment, callback: ApiCallback<Payment>) {

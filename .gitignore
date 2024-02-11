@@ -13,3 +13,4 @@ app/release/output.json
 *.apk
 signing.properties
 *.aar
+*.dm

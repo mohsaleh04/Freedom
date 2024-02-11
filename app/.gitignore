@@ -1,2 +1,6 @@
 /build
 /google-services.json
+app/release/output.json
+*.apk
+*.dm
+

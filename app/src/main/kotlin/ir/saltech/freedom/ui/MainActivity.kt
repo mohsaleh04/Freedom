@@ -238,7 +238,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         val appLinkData: Uri? = appLinkIntent.data
         if (Intent.ACTION_VIEW == appLinkAction) {
             appLinkData?.lastPathSegment?.also { recipeId ->
-                val uriPath = "content://ir.saltech.freedom/app/"
+                val uriPath = "content://ir.saltech.prox/app/"
                 Uri
                     .parse(uriPath)
                     .buildUpon()
@@ -267,7 +267,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     if (responseObject.status == 1) { // Paid and Verified successfully
                         if (user!!.service != null) {
                             binding.checkingServicesText.text = "در حال ثبت سرویس ..."
-                            user = user!!.copy(service = user!!.service!!.copy(mobile = user!!.phoneNumber))
+                            user =
+                                user!!.copy(service = user!!.service!!.copy(mobile = user!!.phoneNumber))
                             mainViewModel.sendPurchaseServiceRequest(
                                 user!!,
                                 object : ApiCallback<ResponseMsg> {
@@ -285,33 +286,85 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                                     @SuppressLint("SetTextI18n")
                                     override fun onFailure(response: ResponseMsg?, t: Throwable?) {
-                                        Log.i("TAG", "Service registration error: ${response?.message}")
-                                        user = user!!.copy(service = null)
-                                        mainViewModel.saveUser(user!!)
-                                        saveUsersPayment(null)
-                                        binding.checkingServicesText.text =
-                                            "در حال ثبت درخواست عودت وجه ..."
-                                        mainViewModel.sendRefundPaymentRequest(
-                                            payment,
-                                            object : ApiCallback<Payment> {
-                                                override fun onSuccessful(responseObject: Payment) {
+                                        Log.i(
+                                            "TAG",
+                                            "Service registration error: ${response?.message}"
+                                        )
+                                        if (response != null) {
+                                            user = user!!.copy(service = null)
+                                            mainViewModel.saveUser(user!!)
+                                            saveUsersPayment(null)
+                                            binding.checkingServicesText.text =
+                                                "در حال ثبت درخواست عودت وجه ..."
+                                            mainViewModel.sendRefundPaymentRequest(
+                                                payment,
+                                                object : ApiCallback<Payment> {
+                                                    override fun onSuccessful(responseObject: Payment) {
+                                                        binding.checkingServices.visibility = GONE
+                                                        binding.errorOccurred.visibility = VISIBLE
+                                                        binding.errorOccurredText.text =
+                                                            "حین ثبت سرویس خطایی رخ داد.\nوجه شما تا 72 ساعت آتی عودت داده می شود."
+                                                    }
+
+                                                    override fun onFailure(
+                                                        response: ResponseMsg?,
+                                                        t: Throwable?
+                                                    ) {
+                                                        binding.checkingServices.visibility = GONE
+                                                        binding.errorOccurred.visibility = VISIBLE
+                                                        binding.errorOccurredText.text =
+                                                            "حین ثبت سرویس خطایی رخ داد.\nجهت عودت وجه، با پشتیبانی تماس بگیرید."
+                                                    }
+
+                                                })
+                                        } else {
+                                            mainViewModel.sendGetServiceRequest(user!!, object : ApiCallback<Service> {
+                                                override fun onSuccessful(responseObject: Service) {
                                                     binding.checkingServices.visibility = GONE
-                                                    binding.errorOccurred.visibility = VISIBLE
-                                                    binding.errorOccurredText.text =
-                                                        "حین ثبت سرویس خطایی رخ داد.\nوجه شما تا 72 ساعت آتی عودت داده می شود."
+                                                    binding.homeLayout.visibility = VISIBLE
+                                                    toast("سرویس با موفقیت ثبت و فعالسازی شد.")
+                                                    user = user!!.copy(payment = null, service = user!!.service!!.copy(trackId = payment.trackId))
+                                                    mainViewModel.saveUser(user!!)
+                                                    saveUsersPayment(null) // FIXME: May be this command incorrect
+                                                    AlertDialog.Builder(this@MainActivity)
+                                                        .setIcon(R.drawable.ic_warning)
+                                                        .setTitle("لطفاً صبر کنید!!!")
+                                                        .setMessage("ممکن است تا فعالسازی کامل حداکثر 5 دقیقه زمان نیاز باشد!\nلطفاً شکیبا باشید.")
+                                                        .setPositiveButton("متوجه شدم"){ dialog, _ ->
+                                                            dialog.dismiss()
+                                                        }
+                                                        .setCancelable(false)
+                                                        .show()
+                                                    doConfigService(responseObject)
                                                 }
 
-                                                override fun onFailure(
-                                                    response: ResponseMsg?,
-                                                    t: Throwable?
-                                                ) {
-                                                    binding.checkingServices.visibility = GONE
-                                                    binding.errorOccurred.visibility = VISIBLE
-                                                    binding.errorOccurredText.text =
-                                                        "حین ثبت سرویس خطایی رخ داد.\nجهت عودت وجه، با پشتیبانی تماس بگیرید."
-                                                }
+                                                override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                                                    binding.checkingServicesText.text =
+                                                        "در حال ثبت درخواست عودت وجه ..."
+                                                    mainViewModel.sendRefundPaymentRequest(
+                                                        payment,
+                                                        object : ApiCallback<Payment> {
+                                                            override fun onSuccessful(responseObject: Payment) {
+                                                                binding.checkingServices.visibility = GONE
+                                                                binding.errorOccurred.visibility = VISIBLE
+                                                                binding.errorOccurredText.text =
+                                                                    "حین ثبت سرویس خطایی رخ داد.\nوجه شما تا 72 ساعت آتی عودت داده می شود."
+                                                            }
 
+                                                            override fun onFailure(
+                                                                response: ResponseMsg?,
+                                                                t: Throwable?
+                                                            ) {
+                                                                binding.checkingServices.visibility = GONE
+                                                                binding.errorOccurred.visibility = VISIBLE
+                                                                binding.errorOccurredText.text =
+                                                                    "حین ثبت سرویس خطایی رخ داد.\nجهت عودت وجه، با پشتیبانی تماس بگیرید."
+                                                            }
+
+                                                        })
+                                                }
                                             })
+                                        }
                                     }
 
                                 })
@@ -1238,7 +1291,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             .setIcon(R.drawable.ic_warning)
                             .setTitle("لطفاً صبر کنید!!!")
                             .setMessage("ممکن است تا فعالسازی کامل حداکثر 5 دقیقه زمان نیاز باشد!\nلطفاً شکیبا باشید.")
-                            .setPositiveButton("متوجه شدم"){ dialog, _ ->
+                            .setPositiveButton("متوجه شدم") { dialog, _ ->
                                 dialog.dismiss()
                             }
                             .setCancelable(false)

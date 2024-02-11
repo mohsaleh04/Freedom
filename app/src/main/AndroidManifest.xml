@@ -71,7 +71,7 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/AppThemeDayNight.NoActionBar">
-            <tools:validation testUrl="https://api.prox.saltech.ir" />
+            <tools:validation testUrl="https://api.prox.saltech.ir/app" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

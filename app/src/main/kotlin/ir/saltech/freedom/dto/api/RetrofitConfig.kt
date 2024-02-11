@@ -1,7 +1,7 @@
 package ir.saltech.freedom.dto.api
 
+import android.util.Log
 import com.google.gson.Gson
-import ir.saltech.freedom.util.MmkvManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -41,7 +41,7 @@ interface ApiCallback<T> {
 	fun onFailure(response: ResponseMsg? = null, t: Throwable? = null)
 }
 
-inline fun <reified T> Call<T>.call(callback: ApiCallback<T>, checkUserValidation: Boolean = false) {
+inline fun <reified T> Call<T>.call(callback: ApiCallback<T>) {
 	this.enqueue(
 		object : Callback<T> {
 			override fun onResponse(call: Call<T>, response: Response<T>) {
@@ -52,6 +52,7 @@ inline fun <reified T> Call<T>.call(callback: ApiCallback<T>, checkUserValidatio
 					if (errorJson != null) {
 						val errorMsg = Gson().fromJson(errorJson.string(), ResponseMsg::class.java)
 						callback.onFailure(response = errorMsg)
+						Log.e("TAG", "ERROR OCCURRED: $errorJson")
 					}
 				}
 			}

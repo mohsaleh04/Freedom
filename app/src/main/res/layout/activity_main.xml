@@ -161,7 +161,7 @@
             android:background="@color/colorBg"
             android:clickable="true"
             android:focusable="true"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -299,6 +299,17 @@
                             android:layout_marginBottom="5dp"
                             android:src="@drawable/login"
                             android:text="@string/signin_app" />
+
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="32dp"
+                            android:fontFamily="@font/peyda_medium"
+                            android:text="در صورتی که قبلا سرویس خریده بودید، شماره تلفنی که در سامانه ثبت کرده بودید را وارد کنید."
+                            android:textColor="@color/color_secondary"
+                            android:textSize="14sp"
+                            android:justificationMode="inter_word" />
 
                     </LinearLayout>
 

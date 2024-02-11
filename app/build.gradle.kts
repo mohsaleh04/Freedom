@@ -23,16 +23,17 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "ir.saltech.freedom"
+        applicationId = "ir.saltech.prox"
         minSdk = 21
         targetSdk = 34
-        versionCode = 541
-        versionName = "1.8.15"
+        versionCode = 1542
+        versionName = "2.14.1925"
         multiDexEnabled = true
         ndk {
             abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
         }
-        signingConfig = signingConfigs.getByName("debug")
+        signingConfig = signingConfigs.getByName("release")
+        proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
     }
 
     compileOptions {
@@ -41,7 +42,7 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             isShrinkResources = false
             multiDexEnabled = true
             ndk {
@@ -93,7 +94,7 @@ android {
 //                output.versionCodeOverride = (1000000 * versionCodes[abi]!!).plus(
 //                    variant.versionCode
 //                )
-                output.outputFileName = "Freedom_" + variant.versionName + "_" + output.getFilter(com.android.build.OutputFile.ABI) + ".apk"
+                output.outputFileName = "Prox_" + variant.versionName + "_" + output.getFilter(com.android.build.OutputFile.ABI) + ".apk"
 
                 output.versionCodeOverride =
                     defaultConfig.versionCode!! * 1000 + variant.versionCode
