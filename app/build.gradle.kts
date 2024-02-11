@@ -23,7 +23,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "ir.saltech.freedom.test"
+        applicationId = "ir.saltech.freedom"
         minSdk = 21
         targetSdk = 34
         versionCode = 541
@@ -122,6 +122,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.multidex:multidex:2.0.1")
     implementation("androidx.viewpager2:viewpager2:1.1.0-beta02")
+//    implementation("androidx.webkit:webkit:1.10.0")
 
     // Androidx ktx
     implementation("androidx.activity:activity-ktx:1.8.2")

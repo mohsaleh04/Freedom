@@ -10,6 +10,7 @@ import java.net.URI
 import java.net.URLConnection
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlin.time.times
 
 /**
  * Some extensions
@@ -116,6 +117,14 @@ infix fun Long.percentOf(total: Long): Double {
     return (this.toDouble() / total.toDouble()) * 100
 }
 
-fun Long.toGigabyte(): Double {
+fun Long.toGigabytes(): Double {
     return this.toDouble() / 1024 / 1024 / 1024
+}
+
+fun Long.toBytes(): Long {
+    return this * 1024 * 1024 * 1024
+}
+
+fun Long.asPrice(): String {
+    return "%,d".format(this)
 }

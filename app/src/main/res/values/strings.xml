@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">تحریم شکن آزادی</string>
+    <string name="app_name">تحریم شکن Prox</string>
     <string name="app_widget_name">تعویض</string>
     <string name="app_tile_name">تعویض</string>
     <string name="app_tile_first_use">برای اولین بار از این ویژگی استفاده می‌کنید، لطفا از برنامه برای افزودن سرور استفاده کنید</string>
@@ -275,5 +275,6 @@
     <string name="remaining_days_text">%d روز از بسته باقیمانده است.</string>
     <string name="wanted_traffic_text">حجم ترافیک درخواستی: %dGB</string>
     <string name="connection_ping_text">%1$s   ms</string>
+    <string name="calculated_costumer_price_text">قیمت مصرف کننده: %s ريال</string>
 
 </resources>

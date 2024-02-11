@@ -15,25 +15,31 @@ private const val AUTHORIZATION_HEADER = "Authorization"
 interface FreedomApi {
 
 	/** User section */
-	@POST("/user/signUp")
+	@POST("user/signUp")
 	fun signUp(@Body body: User): Call<ResponseMsg>
 
-	@POST("/user/verifyPhone")
+	@POST("user/verifyPhone")
 	fun verifyPhone(@Body body: User): Call<ResponseMsg>
 
-	@POST("/user/signIn")
+	@POST("user/signIn")
 	fun signIn(@Body body: User): Call<User>
 
 	/** Service Section */
-	@POST("/service/get")
+	@POST("service/get")
 	fun getService(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: User): Call<Service>
 
-	@PUT("/service/alloc")
+	@PUT("service/alloc")
 	fun allocateService(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: User): Call<ResponseMsg>
 
-	@POST("/service/getLinks")
+	@POST("service/getLinks")
 	fun getLinks(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: User): Call<Service>
 
-	@GET("/service/getVspList")
+	@GET("service/getVspList")
 	fun getVspList(): Call<VspList>
+
+	@POST("service/estimateCost")
+	fun calculatePrice(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: Service): Call<Service>
+
+	@POST("service/purchase")
+	fun purchaseService(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: Service): Call<ResponseMsg>
 }

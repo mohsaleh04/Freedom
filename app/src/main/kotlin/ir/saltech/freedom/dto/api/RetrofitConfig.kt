@@ -9,8 +9,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-const val PAYMENT_URL = "https://pay.saltech.ir"
-const val FREEDOM_URL = "https://api.prox.saltech.ir"
+const val PAYMENT_URL = "https://pay.saltech.ir/api/"
+const val FREEDOM_URL = "https://api.prox.saltech.ir/"
 
 object RetrofitClient {
 	val freedom: Retrofit by lazy {
@@ -51,7 +51,7 @@ inline fun <reified T> Call<T>.call(callback: ApiCallback<T>, checkUserValidatio
 					val errorJson = response.errorBody()
 					if (errorJson != null) {
 						val errorMsg = Gson().fromJson(errorJson.string(), ResponseMsg::class.java)
-						callback.onFailure(response = errorMsg!!)
+						callback.onFailure(response = errorMsg)
 					}
 				}
 			}

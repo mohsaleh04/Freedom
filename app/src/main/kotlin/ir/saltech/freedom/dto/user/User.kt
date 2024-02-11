@@ -9,5 +9,6 @@ data class User(
 	@SerializedName("username") val userName: String? = null,
 	@SerializedName("phone") val phoneNumber: String,
 	val otp: String? = null,
-	val service: Service? = null
+	val service: Service? = null,
+	val payment: Payment? = null
 )

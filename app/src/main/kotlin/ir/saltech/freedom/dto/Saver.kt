@@ -10,7 +10,7 @@ class Saver @SuppressLint("CommitPrefEdits") private constructor(private val con
         context.getSharedPreferences("application_preferences", Context.MODE_PRIVATE)
     private val editor: SharedPreferences.Editor = sp.edit()
 
-    fun setUser(user: User) {
+    fun setUser(user: User?) {
         val gson = Gson()
         val json = gson.toJson(user)
         editor.putString(USER_DATA, json)

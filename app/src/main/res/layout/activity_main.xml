@@ -396,11 +396,24 @@
             android:background="@color/colorBg"
             android:clickable="true"
             android:focusable="true"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent">
+
+            <ir.saltech.freedom.ui.view.RowButton
+                android:id="@+id/refresh_payment_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_refresh_24"
+                android:text="بررسی مجدد وضعیت پرداخت"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/checking_services"
+                app:layout_constraintStart_toStartOf="@+id/checking_services"
+                app:layout_constraintTop_toBottomOf="@+id/checking_services"
+                app:layout_constraintVertical_bias="0.32" />
 
             <LinearLayout
                 android:id="@+id/checking_services"
@@ -741,12 +754,17 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView2">
+                app:layout_constraintTop_toBottomOf="@+id/textView2"
+                tools:ignore="RtlHardcoded">
 
                 <Spinner
                     android:id="@+id/vsp_selection"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layoutDirection="rtl"
+                    android:fontFamily="@font/peyda_regular"
+                    android:nestedScrollingEnabled="true"
+                    android:textDirection="rtl" />
 
                 <TextView
                     android:id="@+id/textView"
@@ -802,16 +820,82 @@
                 app:layout_constraintStart_toStartOf="@+id/linearLayout2"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
+            <LinearLayout
+                android:id="@+id/calculate_price_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="@+id/textView4"
+                app:layout_constraintStart_toStartOf="@+id/textView4"
+                app:layout_constraintTop_toBottomOf="@+id/textView4">
+
+                <LinearLayout
+                    android:id="@+id/check_calculated_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/textView5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/peyda_bold"
+                        android:gravity="center"
+                        android:text="در حال محاسبه قیمت ..."
+                        android:textColor="@color/colorAccent"
+                        android:textSize="16sp" />
+
+                    <ProgressBar
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginTop="2dp"
+                        app:tint="@color/color_secondary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/calculated_price_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/calculated_price_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="5dp"
+                        android:fontFamily="@font/peyda_medium"
+                        android:text="@string/calculated_costumer_price_text"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="16sp" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        app:srcCompat="@drawable/ic_price"
+                        android:layout_marginTop="2dp"
+                        app:tint="@color/colorPrimaryDark" />
+                </LinearLayout>
+
+            </LinearLayout>
+
             <ir.saltech.freedom.ui.view.RowButton
                 android:id="@+id/submit_request_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="26dp"
                 android:src="@drawable/ic_action_done"
                 android:text="تأیید درخواست"
                 app:layout_constraintEnd_toEndOf="@+id/linearLayout2"
                 app:layout_constraintStart_toStartOf="@+id/linearLayout2"
-                app:layout_constraintTop_toBottomOf="@+id/textView4" />
+                app:layout_constraintTop_toBottomOf="@+id/calculate_price_layout" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
@@ -842,6 +926,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:fontFamily="@font/peyda_black"
+                android:gravity="center"
                 android:text="اینترنت در دسترس نمی باشد!"
                 android:textColor="@color/color_secondary"
                 android:textSize="18sp" />
@@ -876,6 +961,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:fontFamily="@font/peyda_black"
+                android:gravity="center"
                 android:text="در حین انجام درخواست، خطایی رخ داد!"
                 android:textColor="@color/color_secondary"
                 android:textSize="18sp" />

@@ -1,5 +1,6 @@
 package ir.saltech.freedom.viewmodel
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.*
 import android.os.Build
@@ -28,6 +29,7 @@ import ir.saltech.freedom.dto.api.ResponseMsg
 import ir.saltech.freedom.dto.api.call
 import ir.saltech.freedom.dto.otp.OtpCode
 import ir.saltech.freedom.dto.otp.OtpSms
+import ir.saltech.freedom.dto.user.Payment
 import ir.saltech.freedom.dto.user.Service
 import ir.saltech.freedom.dto.user.User
 import ir.saltech.freedom.dto.user.VspList
@@ -67,6 +69,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val updateListAction by lazy { MutableLiveData<Int>() }
     val updateTestResultAction by lazy { MutableLiveData<String>() }
     val updateConnectivityAction by lazy { MutableLiveData<Boolean>() }
+    @SuppressLint("StaticFieldLeak")
     var context: Context? = null
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
     val updateOtpAction by lazy { MutableLiveData<String>() }
@@ -334,7 +337,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     /** PROX DATA **/
-    fun saveUser(user: User) {
+    fun saveUser(user: User?) {
         context!!.saver.setUser(user)
     }
 
@@ -365,15 +368,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             ApiClient.freedom.allocateService(user.accessToken.asToken(), user).call(callback, true)
     }
 
-    fun sendGetVSPListRequest(callback: ApiCallback<VspList>) {
-        ApiClient.freedom.getVspList().call(callback)
-    }
-
     fun sendGetLinksRequest(user: User, callback: ApiCallback<Service>) {
         if (user.accessToken != null)
             ApiClient.freedom.getLinks(user.accessToken.asToken(), user).call(callback, true)
     }
 
+    fun sendGetVSPListRequest(callback: ApiCallback<VspList>) {
+        ApiClient.freedom.getVspList().call(callback)
+    }
+
+    fun sendCalculatePriceRequest(user: User, callback: ApiCallback<Service>) {
+        if (user.accessToken != null)
+            ApiClient.freedom.calculatePrice(user.accessToken.asToken(), user.service!!).call(callback, true)
+    }
+
+    fun sendPurchaseServiceRequest(user: User, callback: ApiCallback<ResponseMsg>) {
+        if (user.accessToken != null)
+            ApiClient.freedom.purchaseService(user.accessToken.asToken(), user.service!!).call(callback, true)
+    }
+
+    fun sendBeginPaymentRequest(payment: Payment, callback: ApiCallback<Payment>) {
+        ApiClient.payment.beginPayment(payment).call(callback)
+    }
+
+    fun sendInquiryPaymentRequest(payment: Payment, callback: ApiCallback<Payment>) {
+        ApiClient.payment.inquiryPayment(payment).call(callback)
+    }
+
+    fun sendRefundPaymentRequest(payment: Payment, callback: ApiCallback<Payment>) {
+        ApiClient.payment.refundPayment(payment).call(callback)
+    }
 
     private val mOtpReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -411,7 +435,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     var date = 0L
                     for (i in pdusObj.indices) {
                         val currentMessage =
-                            SmsMessage.createFromPdu(pdusObj[i] as ByteArray?, "3gpp")
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                SmsMessage.createFromPdu(pdusObj[i] as ByteArray?, "3gpp")
+                            } else {
+                                SmsMessage.createFromPdu(pdusObj[i] as ByteArray?)
+                            }
                         if (currentMessage.displayMessageBody.startsWith("<#>")) {
                             message += currentMessage.displayMessageBody
                             date = currentMessage.timestampMillis
