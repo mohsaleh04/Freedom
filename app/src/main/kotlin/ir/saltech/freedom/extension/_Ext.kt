@@ -9,6 +9,7 @@ import org.json.JSONObject
 import java.net.URI
 import java.net.URLConnection
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * Some extensions
@@ -91,6 +92,10 @@ fun Long.asTime(): String {
     return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 }
 
+fun Long.getDays(): Int {
+    return (this.toDouble() / 86400000).roundToInt()
+}
+
 fun String.asToken(): String {
     return "bearer $this"
 }
@@ -105,4 +110,12 @@ fun String.mergedId(): String? {
     } else {
         return null
     }
+}
+
+infix fun Long.percentOf(total: Long): Double {
+    return (this.toDouble() / total.toDouble()) * 100
+}
+
+fun Long.toGigabyte(): Double {
+    return this.toDouble() / 1024 / 1024 / 1024
 }

@@ -14,8 +14,10 @@ import com.tencent.mmkv.MMKV
 import ir.saltech.freedom.AppConfig
 import ir.saltech.freedom.R
 import ir.saltech.freedom.dto.ERoutingMode
+import ir.saltech.freedom.ui.isDisconnectingServer
 import ir.saltech.freedom.util.MmkvManager
 import ir.saltech.freedom.util.MyContextWrapper
+import ir.saltech.freedom.util.NetworkMonitor
 import ir.saltech.freedom.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -74,13 +76,13 @@ class V2RayVpnService : VpnService(), ServiceControl {
 
             override fun onLost(network: Network) {
                 setUnderlyingNetworks(null)
+                onRevoke()
             }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
         V2RayServiceManager.serviceControl = SoftReference(this)
@@ -263,7 +265,8 @@ class V2RayVpnService : VpnService(), ServiceControl {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        V2RayServiceManager.startV2rayPoint()
+        if (NetworkMonitor(this).isNetworkAvailable())
+            V2RayServiceManager.startV2rayPoint()
         return START_STICKY
         //return super.onStartCommand(intent, flags, startId)
     }

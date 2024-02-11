@@ -22,6 +22,8 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -51,7 +53,9 @@ import ir.saltech.freedom.dto.user.Service
 import ir.saltech.freedom.dto.user.User
 import ir.saltech.freedom.dto.user.VspList
 import ir.saltech.freedom.extension.asTime
-import ir.saltech.freedom.extension.mergedId
+import ir.saltech.freedom.extension.getDays
+import ir.saltech.freedom.extension.percentOf
+import ir.saltech.freedom.extension.toGigabyte
 import ir.saltech.freedom.extension.toast
 import ir.saltech.freedom.helper.SimpleItemTouchHelperCallback
 import ir.saltech.freedom.service.V2RayServiceManager
@@ -76,11 +80,12 @@ private const val OTP_EXPIRATION_TIME: Long = 120000
 var isDisconnectingServer = false
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private var isServiceRegistrationWanted: Boolean = false
     private var usingLocalLink: Boolean = false
     private var userInitialized: Boolean = false
     private var connectLevel: Int = 0
     private lateinit var binding: ActivityMainBinding
-    private lateinit var user: User
+    private var user: User? = null
     private lateinit var vspList: VspList
     private var startupCheckLink: Boolean = true
     private val activity = this
@@ -156,7 +161,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         onClicks()
         copyAssets()
         migrateLegacy()
-
     }
 
     private fun getUserDefaults() {
@@ -227,12 +231,20 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun setupViewModel() {
         mainViewModel.context = this
         mainViewModel.updateConnectivityAction.observe(this) {
             if (it) {
                 binding.noInternetConnection.visibility = View.GONE
                 getUserDefaults()
+                if (user != null) {
+                    if (user!!.service != null) {
+                        if (userInitialized && binding.checkingServices.visibility == View.GONE && !isServiceRegistrationWanted) {
+                            setConnectionLayout()
+                        }
+                    }
+                }
             } else {
                 binding.noInternetConnection.visibility = View.VISIBLE
             }
@@ -256,6 +268,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 binding.connectServiceStatus.setTextColor(
                     ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
                 )
+                binding.remainingOfServiceLayout.visibility = View.GONE
                 binding.connectServiceStatus.text = "متصل به سرور"
                 setTestState(getString(R.string.connection_connected))
                 binding.layoutTest.isFocusable = true
@@ -268,7 +281,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     binding.connectionTypeSchema.setImageResource(R.drawable.using_tunnelling)
                 else
                     binding.connectionTypeSchema.setImageResource(R.drawable.using_direct)
-                binding.networkPingText.text = "$it   ms"
+                binding.networkPingText.text = getString(R.string.connection_ping_text, it)
                 Observable.timer(3000, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {
@@ -284,7 +297,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         if (startupCheckLink) {
                             // If the current link (global link) is corrupt, uses the tunnel link
                             MmkvManager.removeAllServer()
-                            setupLink(user.service!!.localLink)
+                            setupLink(user?.service!!.localLink)
                             startupCheckLink = false
                             startConnection()
                             usingLocalLink = true
@@ -313,6 +326,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 mainViewModel.testCurrentServerRealPing()
                 //binding.checkConnectionPing.isEnabled = true
             } else {
+                if (binding.checkingServices.visibility == View.GONE && user != null) {
+                    setConnectionLayout()
+                    sendGetUserRequestAgain()
+                }
                 binding.fab.setImageResource(R.drawable.service_not_connected)
                 binding.fab.backgroundTintList =
                     ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
@@ -337,6 +354,25 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         mainViewModel.startListenBroadcast()
     }
 
+    private fun sendGetUserRequestAgain() {
+        mainViewModel.sendGetServiceRequest(user!!, object : ApiCallback<Service> {
+            override fun onSuccessful(responseObject: Service) {
+                user = user!!.copy(
+                    service = user!!.service!!.copy(
+                        upload = responseObject.upload,
+                        download = responseObject.download
+                    )
+                )
+                mainViewModel.saveUser(user!!)
+                setConnectionLayout()
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+            }
+
+        })
+    }
+
     private fun showTitleConnectingEffect() {
         when (connectLevel) {
             0 -> {
@@ -347,7 +383,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             ColorStateList.valueOf(
                                 ContextCompat.getColor(
                                     this,
-                                    android.R.color.white
+                                    R.color.color_secondary
                                 )
                             )
                         )
@@ -361,23 +397,36 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                 ContextCompat.getColor(this, R.color.color_fab_grey)
                                             )
                                         )
-                                        if (connectLevel == 0) {
-                                            showTitleConnectingEffect()
-                                        } else if (connectLevel == 1) {
-                                            binding.connectServiceStatus.setTextColor(
-                                                ColorStateList.valueOf(
-                                                    ContextCompat.getColor(this, R.color.color_fab_orange)
+                                        when (connectLevel) {
+                                            0 -> {
+                                                showTitleConnectingEffect()
+                                            }
+
+                                            1 -> {
+                                                binding.connectServiceStatus.setTextColor(
+                                                    ColorStateList.valueOf(
+                                                        ContextCompat.getColor(
+                                                            this,
+                                                            R.color.color_fab_orange
+                                                        )
+                                                    )
                                                 )
-                                            )
-                                        } else {
-                                            binding.connectServiceStatus.setTextColor(
-                                                ColorStateList.valueOf(
-                                                    ContextCompat.getColor(this, R.color.color_fab_grey)
+                                            }
+
+                                            else -> {
+                                                binding.connectServiceStatus.setTextColor(
+                                                    ColorStateList.valueOf(
+                                                        ContextCompat.getColor(
+                                                            this,
+                                                            R.color.color_fab_grey
+                                                        )
+                                                    )
                                                 )
-                                            )
+                                            }
                                         }
                                     }
                             }
+
                             1 -> {
                                 binding.connectServiceStatus.setTextColor(
                                     ColorStateList.valueOf(
@@ -385,6 +434,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                     )
                                 )
                             }
+
                             else -> {
                                 binding.connectServiceStatus.setTextColor(
                                     ColorStateList.valueOf(
@@ -395,6 +445,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         }
                     }
             }
+
             1 -> {
                 binding.connectServiceStatus.setTextColor(
                     ColorStateList.valueOf(
@@ -402,6 +453,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     )
                 )
             }
+
             else -> {
                 binding.connectServiceStatus.setTextColor(
                     ColorStateList.valueOf(
@@ -493,6 +545,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     public override fun onPause() {
         super.onPause()
+    }
+
+    public override fun onDestroy() {
+        super.onDestroy()
         NetworkMonitor(this).unregisterNetworkCallback(networkCallback)
     }
 
@@ -1013,108 +1069,120 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private fun setHomeLayout() {
         binding.signupLoginLayout.visibility = View.GONE
         binding.homeLayout.visibility = View.VISIBLE
+        binding.connectService.visibility = View.GONE
         // TODO: Start here
         getUserService()
     }
 
     private fun getUserService() {
-        binding.checkingServices.visibility = View.VISIBLE
-        mainViewModel.sendGetServiceRequest(user, object : ApiCallback<Service> {
-            override fun onSuccessful(responseObject: Service) {
-                binding.checkingServices.visibility = View.GONE
-                doConfigService(responseObject)
-            }
-
-            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
-                if (response?.message == "xuser not found" || response?.message == "service not found") {
-                    binding.checkingServices.visibility = View.VISIBLE
-                    binding.checkingServicesText.text = "در حال تخصیص سرویس"
-                    mainViewModel.sendAllocateServiceRequest(
-                        user,
-                        object : ApiCallback<ResponseMsg> {
-                            override fun onSuccessful(responseObject: ResponseMsg) {
-                                binding.checkingServicesText.text = "در حال دستیابی سرویس"
-                                mainViewModel.sendGetServiceRequest(
-                                    user,
-                                    object : ApiCallback<Service> {
-                                        override fun onSuccessful(responseObject: Service) {
-                                            binding.checkingServices.visibility = View.GONE
-                                            doConfigService(responseObject)
-                                        }
-
-                                        override fun onFailure(
-                                            response: ResponseMsg?,
-                                            t: Throwable?
-                                        ) {
-                                            binding.checkingServices.visibility = View.GONE
-                                            if (response?.message == "xuser not found" || response?.message == "service not found") {
-                                                doPurchaseService()
-                                            } else {
-                                                Toast.makeText(
-                                                    activity,
-                                                    "خطا حین دستیابی به سرویس: ${response?.message}",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        }
-
-                                    })
-                            }
-
-                            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
-                                binding.checkingServices.visibility = View.GONE
-                                if (response?.message == "user not found in service db") {
-                                    doPurchaseService()
-                                } else {
-                                    Toast.makeText(
-                                        activity,
-                                        "خطا حین تخصیص سرویس: ${response?.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-
-                        })
-                } else {
-                    if (response?.message?.contains("token handle error") == true || response?.message == "user not found") {
-                        Toast.makeText(
-                            activity,
-                            "به دلیل مسائل امنیتی، ملزم به ورود مجدد به برنامه هستید.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        finishAndRemoveTask()
-                    }
-                    binding.checkingServices.visibility = View.GONE
-                    Toast.makeText(
-                        activity,
-                        "خطا حین دستیابی به سرویس: ${response?.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+        if (user != null) {
+            binding.checkingServices.visibility = View.VISIBLE
+            binding.errorOccurred.visibility = View.GONE
+            mainViewModel.sendGetServiceRequest(user!!, object : ApiCallback<Service> {
+                override fun onSuccessful(responseObject: Service) {
+                    doConfigService(responseObject)
                 }
-            }
 
-        })
+                override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                    Utils.stopVService(this@MainActivity, mainViewModel)
+                    if (response?.message == "xuser not found" || response?.message == "service not found") {
+                        binding.checkingServices.visibility = View.VISIBLE
+                        binding.checkingServicesText.text = "در حال تخصیص سرویس"
+                        mainViewModel.sendAllocateServiceRequest(
+                            user!!,
+                            object : ApiCallback<ResponseMsg> {
+                                override fun onSuccessful(responseObject: ResponseMsg) {
+                                    binding.checkingServicesText.text = "در حال دستیابی سرویس"
+                                    mainViewModel.sendGetServiceRequest(
+                                        user!!,
+                                        object : ApiCallback<Service> {
+                                            override fun onSuccessful(responseObject: Service) {
+                                                doConfigService(responseObject)
+                                            }
+
+                                            override fun onFailure(
+                                                response: ResponseMsg?,
+                                                t: Throwable?
+                                            ) {
+                                                binding.checkingServices.visibility = View.GONE
+                                                if (response?.message == "xuser not found" || response?.message == "service not found") {
+                                                    doPurchaseService()
+                                                } else {
+                                                    binding.errorOccurred.visibility = View.VISIBLE
+                                                    Toast.makeText(
+                                                        activity,
+                                                        "خطا حین دستیابی به سرویس: ${response?.message}",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+
+                                        })
+                                }
+
+                                override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                                    binding.checkingServices.visibility = View.GONE
+                                    if (response?.message == "user not found in service db") {
+                                        doPurchaseService()
+                                    } else {
+                                        binding.errorOccurred.visibility = View.VISIBLE
+                                        Toast.makeText(
+                                            activity,
+                                            "خطا حین تخصیص سرویس: ${response?.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+
+                            })
+                    } else {
+                        if (response != null) {
+                            if (response.message.contains("token handle error") || response.message == "user not found") {
+                                Toast.makeText(
+                                    activity,
+                                    "به دلیل مسائل امنیتی، ملزم به ورود مجدد به برنامه هستید.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                finishAndRemoveTask()
+                            }
+                            binding.checkingServices.visibility = View.GONE
+                            Toast.makeText(
+                                activity,
+                                "خطا حین دستیابی به سرویس: ${response.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            toast("... بررسی مجدد ...")
+                            getUserService()
+                        }
+                    }
+                }
+
+            })
+        }
     }
 
     fun doConfigService(service: Service) {
-        user = user.copy(service = service)
-        mainViewModel.saveUser(user)
-        mainViewModel.sendGetLinksRequest(user, object : ApiCallback<Service> {
+        user = user!!.copy(service = service)
+        mainViewModel.saveUser(user!!)
+        // Get V2RAY Links
+        mainViewModel.sendGetLinksRequest(user!!, object : ApiCallback<Service> {
             override fun onSuccessful(responseObject: Service) {
+                binding.checkingServices.visibility = View.GONE
                 val aLink = responseObject.globalLink
                 if (aLink.startsWith("vless://")) {
                     val id = aLink.substring(8..43)
                     setupLink(aLink)
                     val provider = aLink.substringAfterLast("#").split("-")[0]
-                    user = user.copy(
-                        service = user.service!!.copy(
+                    user = user!!.copy(
+                        service = user!!.service!!.copy(
                             id = id,
                             provider = provider,
                             globalLink = responseObject.globalLink,
                             localLink = responseObject.localLink
                         )
                     )
-                    mainViewModel.saveUser(user)
+                    mainViewModel.saveUser(user!!)
                     setConnectionLayout()
                 } else {
                     Toast.makeText(
@@ -1126,6 +1194,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
 
             override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                binding.checkingServices.visibility = View.GONE
                 Toast.makeText(
                     activity,
                     "خطا حین دریافت اطلاعات سرویس: ${response?.message}",
@@ -1146,12 +1215,66 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun setConnectionLayout() {
         binding.connectService.visibility = View.VISIBLE
+        if (user!!.service?.totalTraffic != null) {
+            val consumedTraffic = user!!.service!!.upload + user!!.service!!.download
+            val remainingTraffic = user!!.service!!.totalTraffic - consumedTraffic
+            val percentOfRemaining = consumedTraffic percentOf user!!.service!!.totalTraffic
+            val currentTimeMillis = System.currentTimeMillis()
+            val remainingDays = user!!.service!!.expiryTime - currentTimeMillis
+            Log.i(
+                "TAG",
+                "Consumed Traffic: $consumedTraffic\n Remaining Traffic: $remainingTraffic || $percentOfRemaining%\nRemaining Days: $remainingDays"
+            )
+            binding.remainingTrafficText.text =
+                getString(
+                    R.string.remaining_traffic_text,
+                    remainingTraffic.toGigabyte(),
+                    user!!.service!!.totalTraffic.toGigabyte()
+                )
+            binding.remainingTrafficBar.progress = percentOfRemaining.toInt()
+            if (remainingDays.getDays() < 0) {
+                binding.remainingDaysText.text = "سرویس شما، دارای محدودیت زمانی نمی باشد."
+            } else {
+                binding.remainingDaysText.text =
+                    getString(R.string.remaining_days_text, remainingDays.getDays())
+            }
+            if (mainViewModel.isRunning.value == false)
+                binding.remainingOfServiceLayout.visibility = View.VISIBLE
+            else
+                binding.remainingOfServiceLayout.visibility = View.GONE
+        }
     }
 
     fun doPurchaseService() {
+        isServiceRegistrationWanted = true
         mainViewModel.sendGetVSPListRequest(object : ApiCallback<VspList> {
             override fun onSuccessful(responseObject: VspList) {
                 vspList = responseObject
+                binding.vspSelection.adapter =
+                    ArrayAdapter(activity, android.R.layout.simple_spinner_item, vspList.vspList)
+                binding.wantedTrafficBar.setOnSeekBarChangeListener(object :
+                    SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(
+                        seekBar: SeekBar?,
+                        progress: Int,
+                        fromUser: Boolean
+                    ) {
+                        if (fromUser)
+                            binding.wantedTrafficText.text =
+                                getString(R.string.wanted_traffic_text, progress)
+                    }
+
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    }
+
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    }
+
+                })
+                binding.submitRequest1.setOnClickListener {
+
+                }
+                binding.purchaseServiceLayout.visibility = View.VISIBLE
             }
 
             override fun onFailure(response: ResponseMsg?, t: Throwable?) {
@@ -1162,34 +1285,39 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun checkOtpDoLogin(it: String?) {
-        binding.verifyCode.editText?.setText(it)
-        binding.loadingBar.visibility = View.VISIBLE
-        mainViewModel.sendSignInRequest(user.copy(otp = it), object : ApiCallback<User> {
-            override fun onSuccessful(responseObject: User) {
-                binding.loadingBar.visibility = View.GONE
-                user = user.copy(id = responseObject.id, accessToken = responseObject.accessToken)
-                mainViewModel.saveUser(
-                    user.copy(
+        if (user != null) {
+            binding.verifyCode.editText?.setText(it)
+            binding.loadingBar.visibility = View.VISIBLE
+            mainViewModel.sendSignInRequest(user!!.copy(otp = it), object : ApiCallback<User> {
+                override fun onSuccessful(responseObject: User) {
+                    binding.loadingBar.visibility = View.GONE
+                    user = user!!.copy(
                         id = responseObject.id,
                         accessToken = responseObject.accessToken
                     )
-                )
-                setHomeLayout()
-                Toast.makeText(activity, "خوش آمدید!", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
-                binding.loadingBar.visibility = View.GONE
-                if (response != null) {
-                    Toast.makeText(
-                        activity,
-                        "خطای رمز یکبار مصرف: ${response.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    mainViewModel.saveUser(
+                        user!!.copy(
+                            id = responseObject.id,
+                            accessToken = responseObject.accessToken
+                        )
+                    )
+                    setHomeLayout()
+                    Toast.makeText(activity, "خوش آمدید!", Toast.LENGTH_SHORT).show()
                 }
-            }
 
-        })
+                override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                    binding.loadingBar.visibility = View.GONE
+                    if (response != null) {
+                        Toast.makeText(
+                            activity,
+                            "خطای رمز یکبار مصرف: ${response.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+            })
+        }
     }
 
     private fun onClicks() {
@@ -1213,7 +1341,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 Toast.makeText(this, "اتصال شما به صورت مستقیم است.", Toast.LENGTH_SHORT).show()
         }
         binding.showLinksBtn.setOnClickListener {
-            binding.shareLinkText.text = if (usingLocalLink) user.service?.localLink else user.service?.globalLink
+            binding.shareLinkText.text =
+                if (usingLocalLink) user!!.service?.localLink else user!!.service?.globalLink
             binding.shareLinkLayout.visibility = View.VISIBLE
             Observable.timer(5000, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -1228,17 +1357,28 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     when (i) {
                         0 -> {
                             val ivBinding = ItemQrcodeBinding.inflate(LayoutInflater.from(this))
-                            ivBinding.ivQcode.setImageBitmap(AngConfigManager.share2QRCode(mainViewModel.serversCache[0].guid))
+                            ivBinding.ivQcode.setImageBitmap(
+                                AngConfigManager.share2QRCode(
+                                    mainViewModel.serversCache[0].guid
+                                )
+                            )
                             AlertDialog.Builder(this).setView(ivBinding.root).show()
                         }
+
                         1 -> {
-                            if (AngConfigManager.share2Clipboard(this, mainViewModel.serversCache[0].guid) == 0) {
+                            if (AngConfigManager.share2Clipboard(
+                                    this,
+                                    mainViewModel.serversCache[0].guid
+                                ) == 0
+                            ) {
                                 toast("لینک در کلیپ بورد، کپی شد.")
                             } else {
                                 toast(R.string.toast_failure)
                             }
                         }
-                        2 -> Toast.makeText(this, "این قابلیت پشتیبانی نمی شود", Toast.LENGTH_SHORT).show()
+
+                        2 -> Toast.makeText(this, "این قابلیت پشتیبانی نمی شود", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -1397,7 +1537,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         binding.loadingBar.visibility = View.VISIBLE
         //val user2 = mainViewModel.loadUser()!!
         //Toast.makeText(activity, "Saved User => name: ${user2.userName} || phoneNumber: ${user2.phoneNumber}", Toast.LENGTH_SHORT).show()
-        mainViewModel.sendSignUpRequest(user, object : ApiCallback<ResponseMsg> {
+        mainViewModel.sendSignUpRequest(user!!, object : ApiCallback<ResponseMsg> {
             override fun onSuccessful(responseObject: ResponseMsg) {
                 binding.signupLoginBtn.isEnabled = true
                 binding.signupUsername.isEnabled = true
@@ -1428,7 +1568,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         val phone = binding.signupPhone.editText!!.text.toString()
         binding.loadingBar.visibility = View.VISIBLE
         user = User(phoneNumber = phone)
-        mainViewModel.sendVerifyPhoneRequest(user, object : ApiCallback<ResponseMsg> {
+        mainViewModel.sendVerifyPhoneRequest(user!!, object : ApiCallback<ResponseMsg> {
             override fun onSuccessful(responseObject: ResponseMsg) {
                 binding.signupLayout.visibility = View.GONE
                 binding.verifyLayout.visibility = View.VISIBLE

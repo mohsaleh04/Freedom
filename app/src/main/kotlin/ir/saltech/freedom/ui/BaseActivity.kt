@@ -19,6 +19,7 @@ abstract class BaseActivity : AppCompatActivity() {
         if (!Utils.getDarkModeStatus(this)) {
             WindowCompat.getInsetsController(window, window.decorView).apply {
                 isAppearanceLightStatusBars = true
+                isAppearanceLightNavigationBars = true
             }
         }
     }
