@@ -1331,7 +1331,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         mainViewModel.saveUser(user!!)
                     } else {
                         Utils.stopVService(this@MainActivity, mainViewModel)
-                        if (response?.message == "xuser not found" || response?.message == "service not found") {
+                        if (response?.message == "xuser not found") {
                             binding.checkingServices.visibility = VISIBLE
                             binding.checkingServicesText.text = "در حال تخصیص سرویس ..."
                             mainViewModel.sendAllocateServiceRequest(
@@ -1382,6 +1382,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                     }
 
                                 })
+                        }
+                        else if (response?.message?.contains("service not found") == true) {
+                            binding.checkingServices.visibility = GONE
+                            user = user!!.copy(service = null)
+                            mainViewModel.saveUser(user!!)
+                            toast("سرویس شما به پایان رسیده است یا یافت نشد!")
+                            doPurchaseService()
                         } else {
                             if (response != null) {
                                 if (response.message.contains("token handle error") || response.message == "user not found") {
@@ -1725,6 +1732,33 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun onClicks() {
+        binding.connectionTypeLayout.setOnClickListener {
+            if (user?.service!!.localLink != null) {
+                AlertDialog.Builder(this)
+                    .setTitle("تغییر نوع اتصال")
+                    .setMessage(if (usingLocalLink) "آیا میخواهید اتصال خود را از واسط به مستقیم تغییر دهید؟" else "آیا میخواهید اتصال خود را از مستقیم به واسط تغییر دهید؟")
+                    .setPositiveButton("بله") { dialog, _ ->
+                        if (!usingLocalLink) {
+                            MmkvManager.removeAllServer()
+                            setupLink(user?.service!!.localLink!!)
+                            startConnection()
+                            usingLocalLink = true
+                            Log.i("TAG", "TTLink: ${user?.service!!.localLink!!}")
+                            Log.i("TAG", "TTLink: ${user?.service!!.globalLink!!}")
+                            Log.i("CONNECTION_TYPE", "Now using tunnel!")
+                        } else {
+                            MmkvManager.removeAllServer()
+                            setupLink(user?.service!!.globalLink!!)
+                            startConnection()
+                            usingLocalLink = false
+                            Log.i("CONNECTION_TYPE", "Now using direct!")
+                        }
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("خیر") { dialog, _ -> dialog.dismiss() }
+                    .show()
+            }
+        }
         binding.refreshPaymentStatus.setOnClickListener {
             binding.refreshPaymentStatus.visibility = GONE
             checkPaymentResult()
@@ -1742,11 +1776,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 mainViewModel.testCurrentServerRealPing()
             }
         }
-        binding.connectionTypeLayout.setOnClickListener {
+        binding.connectionTypeLayout.setOnLongClickListener {
             if (usingLocalLink)
                 Toast.makeText(this, "اتصال شما به صورت واسط است.", Toast.LENGTH_SHORT).show()
             else
                 Toast.makeText(this, "اتصال شما به صورت مستقیم است.", Toast.LENGTH_SHORT).show()
+            true
         }
         binding.showLinksBtn.setOnClickListener {
             binding.shareLinkText.text =

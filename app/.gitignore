@@ -4,3 +4,5 @@ app/release/output.json
 *.apk
 *.dm
 
+libs/libv2ray-sources.jar
+

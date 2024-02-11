@@ -24,6 +24,7 @@ import ir.saltech.freedom.util.MmkvManager
 import ir.saltech.freedom.util.Utils
 import ir.saltech.freedom.util.V2rayConfigUtil
 import go.Seq
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -229,6 +230,7 @@ object V2RayServiceManager {
         }
     }
 
+    @DelicateCoroutinesApi
     private fun measureV2rayDelay() {
         GlobalScope.launch(Dispatchers.IO) {
             val service = serviceControl?.get()?.getService() ?: return@launch
