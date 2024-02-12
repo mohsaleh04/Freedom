@@ -19,8 +19,9 @@ android {
             keyPassword = "SalTech#1402"
         }
     }
-    namespace = "ir.saltech.freedom"
+
     compileSdk = 34
+    namespace = "ir.saltech.freedom"
 
     defaultConfig {
         applicationId = "ir.saltech.prox"
@@ -29,83 +30,34 @@ android {
         versionCode = 1550
         versionName = "2.14.2000"
         multiDexEnabled = true
-        ndk {
-            abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
-        }
         signingConfig = signingConfigs.getByName("release")
         proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             isShrinkResources = false
-            multiDexEnabled = true
-            ndk {
-                abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
-            }
         }
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
-            multiDexEnabled = true
-            ndk {
-                abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
-            }
         }
-    }
-
-    sourceSets {
-        getByName("main") {
-            jniLibs.srcDirs("libs")
-        }
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
-    splits {
-        abi {
-            isEnable = true
-            isUniversalApk = true
-            include("armeabi-v7a","arm64-v8a","x86","x86_64")
-        }
-    }
-
-
-    applicationVariants.all {
-        val variant = this
-//        val versionCodes =
-//            mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" to 4, "all" to 0)
-
-        variant.outputs
-            .map { it as com.android.build.gradle.internal.api.ApkVariantOutputImpl }
-            .forEach { output ->
-//                val abi = if (output.getFilter(com.android.build.OutputFile.ABI) != null)
-//                    output.getFilter(com.android.build.OutputFile.ABI)
-//                else
-//                    "all"
-//                output.outputFileName = "v2rayNG_.apk"
-//                output.versionCodeOverride = (1000000 * versionCodes[abi]!!).plus(
-//                    variant.versionCode
-//                )
-                output.outputFileName = "Prox_" + variant.versionName + "_" + output.getFilter(com.android.build.OutputFile.ABI) + ".apk"
-
-                output.versionCodeOverride =
-                    defaultConfig.versionCode!! * 1000 + variant.versionCode
-            }
     }
 
     buildFeatures {
         viewBinding = true
         buildConfig = true
     }
-    ndkVersion = "26.1.10909125"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
 }
 
 dependencies {

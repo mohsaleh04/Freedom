@@ -174,11 +174,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         onClicks()
         copyAssets()
         migrateLegacy()
-        // ATTENTION: This was auto-generated to handle app links.
-        // ATTENTION: This was auto-generated to handle app links.
-        val appLinkIntent: Intent = intent
-        val appLinkAction: String? = appLinkIntent.action
-        val appLinkData: Uri? = appLinkIntent.data
     }
 
     private fun getUserDefaults() {
@@ -1896,6 +1891,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             binding.signupPhone.error = null
             binding.signupPhone.isEnabled = false
             binding.signupLoginBtn.isEnabled = false
+            binding.customerPhoneHelp.visibility = GONE
             sendVerifyRequest()
         }
     }
@@ -2015,6 +2011,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             override fun onSuccessful(responseObject: ResponseMsg) {
                 binding.signupLayout.visibility = GONE
                 binding.verifyLayout.visibility = VISIBLE
+                binding.customerPhoneHelp.visibility = GONE
                 binding.loadingBar.visibility = GONE
                 binding.resendVerifyCode.isEnabled = false
                 binding.verifyCode.isEnabled = false
@@ -2036,6 +2033,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
             override fun onFailure(response: ResponseMsg?, t: Throwable?) {
                 binding.signupLoginBtn.isEnabled = true
+                binding.customerPhoneHelp.visibility = VISIBLE
                 binding.loadingBar.visibility = GONE
                 if (response != null) {
                     if (response.message == "user not found") {

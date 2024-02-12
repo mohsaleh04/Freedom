@@ -301,7 +301,7 @@
                             android:text="@string/signin_app" />
 
                         <TextView
-                            android:id="@+id/textView3"
+                            android:id="@+id/customer_phone_help"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="32dp"
