@@ -139,540 +139,305 @@
         </com.google.android.material.navigation.NavigationView>
     </androidx.drawerlayout.widget.DrawerLayout>
 
-    <!-- MY SIDE -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/new_design_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:animateLayoutChanges="true"
-        android:background="@color/colorBg"
-        android:clickable="true"
-        android:focusable="true"
-        android:visibility="visible"
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fadeScrollbars="true"
+        android:fillViewport="true"
+        android:isScrollContainer="true"
+        android:scrollbarSize="0dp"
+        android:scrollbarStyle="outsideInset"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- MY SIDE -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/signup_login_layout"
+            android:id="@+id/new_design_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorBg"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="250dp"
-                android:layout_height="75dp"
-                android:scaleX="0.9"
-                android:scaleY="0.9"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.28"
-                app:srcCompat="@drawable/saltech_prox" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:animateLayoutChanges="true"
-                android:gravity="center"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="@+id/imageView"
-                app:layout_constraintStart_toStartOf="@+id/imageView"
-                app:layout_constraintTop_toBottomOf="@+id/imageView">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:animateLayoutChanges="true"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:id="@+id/signup_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:visibility="visible">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/signup_phone"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/peyda_medium"
-                            android:hint="@string/signup_phone"
-                            android:layoutDirection="rtl"
-                            android:textColorHint="@color/color_material_input"
-                            android:textDirection="rtl"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="15dp"
-                            app:boxCornerRadiusBottomStart="15dp"
-                            app:boxCornerRadiusTopEnd="15dp"
-                            app:boxCornerRadiusTopStart="15dp"
-                            app:boxStrokeColor="@color/color_material_input"
-                            app:boxStrokeErrorColor="@color/colorError"
-                            app:boxStrokeWidth="2dp"
-                            app:endIconDrawable="@drawable/current_phone_number"
-                            app:endIconMode="custom"
-                            app:endIconTint="@color/color_material_input"
-                            app:errorTextAppearance="@style/HelpTextStyle"
-                            app:errorTextColor="@color/colorError"
-                            app:helperText="مثال: 09123456789"
-                            app:helperTextTextAppearance="@style/HelpTextStyle">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
-                                android:background="@null"
-                                android:fontFamily="@font/peyda_medium"
-                                android:imeOptions="actionDone"
-                                android:inputType="phone"
-                                android:maxLength="11"
-                                android:maxLines="1"
-                                android:padding="16dp"
-                                android:singleLine="true"
-                                android:textColor="@color/color_material_input"
-                                android:textColorHint="@color/color_material_input"
-                                android:textDirection="ltr"
-                                android:textSize="14sp" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/signup_username"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:layoutDirection="rtl"
-                            android:textColorHint="@color/color_material_input"
-                            android:textDirection="rtl"
-                            android:visibility="gone"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="15dp"
-                            app:boxCornerRadiusBottomStart="15dp"
-                            app:boxCornerRadiusTopEnd="15dp"
-                            app:boxCornerRadiusTopStart="15dp"
-                            app:boxStrokeColor="@color/color_material_input"
-                            app:boxStrokeErrorColor="@color/colorError"
-                            app:boxStrokeWidth="2dp"
-                            app:errorEnabled="true"
-                            app:errorTextAppearance="@style/HelpTextStyle"
-                            app:errorTextColor="@color/colorError">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
-                                android:background="@null"
-                                android:fontFamily="@font/peyda_medium"
-                                android:hint="@string/signup_username"
-                                android:imeOptions="actionDone"
-                                android:inputType="text|textPersonName|textCapWords"
-                                android:maxLength="50"
-                                android:maxLines="1"
-                                android:padding="16dp"
-                                android:singleLine="true"
-                                android:textColor="@color/color_material_input"
-                                android:textColorHint="@color/color_material_input"
-                                android:textDirection="rtl"
-                                android:textSize="14sp" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <ir.saltech.freedom.ui.view.RowButton
-                            android:id="@+id/signup_login_btn"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="21dp"
-                            android:layout_marginBottom="5dp"
-                            android:src="@drawable/login"
-                            android:text="@string/signin_app" />
-
-                        <TextView
-                            android:id="@+id/customer_phone_help"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="32dp"
-                            android:fontFamily="@font/peyda_medium"
-                            android:text="در صورتی که قبلا سرویس خریده بودید، شماره تلفنی که در سامانه ثبت کرده بودید را وارد کنید."
-                            android:textColor="@color/color_secondary"
-                            android:textSize="14sp"
-                            android:justificationMode="inter_word" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/verify_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:visibility="gone">
-
-                        <TextView
-                            android:id="@+id/verify_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/peyda_medium"
-                            android:justificationMode="inter_word"
-                            android:text="@string/verify_title"
-                            android:textColor="@color/disable_button"
-                            android:textSize="18sp" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/verify_code"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:enabled="false"
-                            android:gravity="center"
-                            android:layoutDirection="rtl"
-                            android:textColorHint="@color/color_material_input"
-                            android:textDirection="rtl"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="15dp"
-                            app:boxCornerRadiusBottomStart="15dp"
-                            app:boxCornerRadiusTopEnd="15dp"
-                            app:boxCornerRadiusTopStart="15dp"
-                            app:boxStrokeColor="@color/color_material_input"
-                            app:boxStrokeErrorColor="@color/colorError"
-                            app:boxStrokeWidth="2dp"
-                            app:errorEnabled="true"
-                            app:errorTextAppearance="@style/HelpTextStyle"
-                            app:errorTextColor="@color/colorError">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
-                                android:background="@null"
-                                android:fontFamily="@font/peyda_medium"
-                                android:gravity="center"
-                                android:hint="رمز یکبار مصرف"
-                                android:imeOptions="actionDone"
-                                android:inputType="number"
-                                android:maxLength="8"
-                                android:maxLines="1"
-                                android:padding="16dp"
-                                android:singleLine="true"
-                                android:textColor="@color/color_material_input"
-                                android:textColorHint="@color/color_material_input"
-                                android:textDirection="rtl"
-                                android:textSize="14sp" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <ir.saltech.freedom.ui.view.RowButton
-                            android:id="@+id/resend_verify_code"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginBottom="5dp"
-                            android:src="@drawable/verify_phone_otp"
-                            android:text="@string/resend" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <ProgressBar
-                    android:id="@+id/loading_bar"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="11dp"
-                    android:indeterminate="true"
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/home_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
             android:background="@color/colorBg"
             android:clickable="true"
             android:focusable="true"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ir.saltech.freedom.ui.view.RowButton
-                android:id="@+id/refresh_payment_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_refresh_24"
-                android:text="بررسی مجدد وضعیت پرداخت"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/checking_services"
-                app:layout_constraintStart_toStartOf="@+id/checking_services"
-                app:layout_constraintTop_toBottomOf="@+id/checking_services"
-                app:layout_constraintVertical_bias="0.32" />
-
-            <LinearLayout
-                android:id="@+id/checking_services"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:indeterminateOnly="true" />
-
-                <TextView
-                    android:id="@+id/checking_services_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:fontFamily="@font/peyda_bold"
-                    android:text="در حال بررسی سرویس"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
+            android:visibility="visible">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/connect_service"
+                android:id="@+id/signup_login_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/colorBg"
                 android:clickable="true"
                 android:focusable="true"
-                android:gravity="center"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="1.0">
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-
-                <TextView
-                    android:id="@+id/connect_service_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/peyda_bold"
-                    android:textAlignment="center"
-                    android:textSize="36sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="250dp"
+                    android:layout_height="75dp"
+                    android:scaleX="0.9"
+                    android:scaleY="0.9"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.28"
+                    app:srcCompat="@drawable/saltech_prox" />
 
                 <LinearLayout
-                    android:id="@+id/connection_type_layout"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="horizontal"
-                    android:scaleX="1.05"
-                    android:scaleY="1.05"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
-                    app:layout_constraintEnd_toEndOf="@+id/connect_service_status"
-                    app:layout_constraintStart_toStartOf="@+id/connect_service_status"
-                    app:layout_constraintTop_toBottomOf="@+id/connect_service_status">
+                    android:layout_marginTop="32dp"
+                    android:animateLayoutChanges="true"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="@+id/imageView"
+                    app:layout_constraintStart_toStartOf="@+id/imageView"
+                    app:layout_constraintTop_toBottomOf="@+id/imageView">
 
-                    <ImageView
-                        android:id="@+id/laptop_schema"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/client_scheme"
-                        app:tint="@color/color_secondary" />
+                        android:animateLayoutChanges="true"
+                        android:gravity="center"
+                        android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/connection_type_schema"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:rotation="90"
-                        app:srcCompat="@drawable/using_direct"
-                        app:tint="@color/color_secondary" />
+                        <LinearLayout
+                            android:id="@+id/signup_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:visibility="visible">
 
-                    <ImageView
-                        android:id="@+id/imageView4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:srcCompat="@drawable/net_scheme"
-                        app:tint="@color/color_secondary" />
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/signup_phone"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/peyda_medium"
+                                android:hint="@string/signup_phone"
+                                android:layoutDirection="rtl"
+                                android:textColorHint="@color/color_material_input"
+                                android:textDirection="rtl"
+                                app:boxBackgroundMode="outline"
+                                app:boxCornerRadiusBottomEnd="15dp"
+                                app:boxCornerRadiusBottomStart="15dp"
+                                app:boxCornerRadiusTopEnd="15dp"
+                                app:boxCornerRadiusTopStart="15dp"
+                                app:boxStrokeColor="@color/color_material_input"
+                                app:boxStrokeErrorColor="@color/colorError"
+                                app:boxStrokeWidth="2dp"
+                                app:endIconDrawable="@drawable/current_phone_number"
+                                app:endIconMode="custom"
+                                app:endIconTint="@color/color_material_input"
+                                app:errorTextAppearance="@style/HelpTextStyle"
+                                app:errorTextColor="@color/colorError"
+                                app:helperText="مثال: 09123456789"
+                                app:helperTextTextAppearance="@style/HelpTextStyle">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_marginRight="5dp"
+                                    android:background="@null"
+                                    android:fontFamily="@font/peyda_medium"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="phone"
+                                    android:maxLength="11"
+                                    android:maxLines="1"
+                                    android:padding="16dp"
+                                    android:singleLine="true"
+                                    android:textColor="@color/color_material_input"
+                                    android:textColorHint="@color/color_material_input"
+                                    android:textDirection="ltr"
+                                    android:textSize="14sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/signup_username"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layoutDirection="rtl"
+                                android:textColorHint="@color/color_material_input"
+                                android:textDirection="rtl"
+                                android:visibility="gone"
+                                app:boxBackgroundMode="outline"
+                                app:boxCornerRadiusBottomEnd="15dp"
+                                app:boxCornerRadiusBottomStart="15dp"
+                                app:boxCornerRadiusTopEnd="15dp"
+                                app:boxCornerRadiusTopStart="15dp"
+                                app:boxStrokeColor="@color/color_material_input"
+                                app:boxStrokeErrorColor="@color/colorError"
+                                app:boxStrokeWidth="2dp"
+                                app:errorEnabled="true"
+                                app:errorTextAppearance="@style/HelpTextStyle"
+                                app:errorTextColor="@color/colorError"
+                                app:helperText="مثلاً محمد علی سبزواری"
+                                app:helperTextEnabled="true"
+                                app:helperTextTextAppearance="@style/HelpTextStyle">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_marginRight="5dp"
+                                    android:background="@null"
+                                    android:fontFamily="@font/peyda_medium"
+                                    android:hint="@string/signup_username"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="text|textPersonName|textCapWords"
+                                    android:maxLength="50"
+                                    android:maxLines="1"
+                                    android:padding="16dp"
+                                    android:singleLine="true"
+                                    android:textColor="@color/color_material_input"
+                                    android:textColorHint="@color/color_material_input"
+                                    android:textDirection="rtl"
+                                    android:textSize="14sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <ir.saltech.freedom.ui.view.RowButton
+                                android:id="@+id/signup_login_btn"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:src="@drawable/login"
+                                android:text="@string/signin_app" />
+
+                            <TextView
+                                android:id="@+id/customer_phone_help"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="32dp"
+                                android:fontFamily="@font/peyda_medium"
+                                android:justificationMode="inter_word"
+                                android:text="در صورتی که قبلا سرویس خریده بودید، شماره تلفنی که در سامانه ثبت کرده بودید را وارد کنید."
+                                android:textColor="@color/color_secondary"
+                                android:textSize="14sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/verify_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/verify_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/peyda_medium"
+                                android:justificationMode="inter_word"
+                                android:text="@string/verify_title"
+                                android:textColor="@color/disable_button"
+                                android:textSize="18sp" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/verify_code"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:enabled="false"
+                                android:gravity="center"
+                                android:layoutDirection="rtl"
+                                android:textColorHint="@color/color_material_input"
+                                android:textDirection="rtl"
+                                app:boxBackgroundMode="outline"
+                                app:boxCornerRadiusBottomEnd="15dp"
+                                app:boxCornerRadiusBottomStart="15dp"
+                                app:boxCornerRadiusTopEnd="15dp"
+                                app:boxCornerRadiusTopStart="15dp"
+                                app:boxStrokeColor="@color/color_material_input"
+                                app:boxStrokeErrorColor="@color/colorError"
+                                app:boxStrokeWidth="2dp"
+                                app:errorEnabled="true"
+                                app:errorTextAppearance="@style/HelpTextStyle"
+                                app:errorTextColor="@color/colorError">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_marginRight="5dp"
+                                    android:background="@null"
+                                    android:fontFamily="@font/peyda_medium"
+                                    android:gravity="center"
+                                    android:hint="رمز یکبار مصرف"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="number"
+                                    android:maxLength="8"
+                                    android:maxLines="1"
+                                    android:padding="16dp"
+                                    android:singleLine="true"
+                                    android:textColor="@color/color_material_input"
+                                    android:textColorHint="@color/color_material_input"
+                                    android:textDirection="rtl"
+                                    android:textSize="14sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <ir.saltech.freedom.ui.view.RowButton
+                                android:id="@+id/resend_verify_code"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:layout_marginBottom="5dp"
+                                android:src="@drawable/verify_phone_otp"
+                                android:text="@string/resend" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/loading_bar"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="11dp"
+                        android:indeterminate="true"
+                        android:visibility="gone" />
+
                 </LinearLayout>
 
-                <ProgressBar
-                    android:id="@+id/trying_to_connect_service"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:scaleX="1.15"
-                    android:scaleY="1.15"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="@+id/fabProgressCircle"
-                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
-                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
-                    app:layout_constraintTop_toTopOf="@+id/fabProgressCircle" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <com.github.jorgecastilloprz.FABProgressCircle
-                    android:id="@+id/fabProgressCircle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="24dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fab"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentBottom="true"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginLeft="16dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginRight="16dp"
-                        android:layout_marginBottom="16dp"
-                        android:clickable="true"
-                        android:contentDescription="TODO"
-                        android:focusable="true"
-                        android:nextFocusLeft="@+id/layout_test"
-                        android:src="@drawable/service_not_connected"
-                        android:tint="@color/color_material_button_text"
-                        app:backgroundTint="@color/color_material_button"
-                        app:fabCustomSize="185dp"
-                        app:layout_anchorGravity="bottom|right|end"
-                        app:maxImageSize="115dp" />
-
-                </com.github.jorgecastilloprz.FABProgressCircle>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/home_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true"
+                android:background="@color/colorBg"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ir.saltech.freedom.ui.view.RowButton
-                    android:id="@+id/check_connection_ping"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:src="@drawable/check_network_ping"
-                    android:text="@string/check_connection_ping_text"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
-                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
-                    app:layout_constraintTop_toBottomOf="@+id/fabProgressCircle"
-                    app:layout_constraintVertical_bias="0.29000002" />
-
-                <LinearLayout
-                    android:id="@+id/network_ping_layout"
+                    android:id="@+id/refresh_payment_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:visibility="gone"
-                    app:layout_constraintLeft_toLeftOf="@id/fabProgressCircle"
-                    app:layout_constraintRight_toRightOf="@id/fabProgressCircle"
-                    app:layout_constraintTop_toBottomOf="@id/fabProgressCircle">
-
-                    <ImageView
-                        android:id="@+id/network_ping_img"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/gathering_network_ping"
-                        app:tint="@color/color_secondary" />
-
-                    <TextView
-                        android:id="@+id/network_ping_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginTop="3dp"
-                        android:fontFamily="@font/peyda_black"
-                        android:text="   ..."
-                        android:textColor="@color/color_secondary"
-                        android:textSize="18sp" />
-
-                </LinearLayout>
-
-                <ir.saltech.freedom.ui.view.RowButton
-                    android:id="@+id/show_links_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/show_links"
-                    android:text="نمایش لینک"
+                    android:src="@drawable/ic_refresh_24"
+                    android:text="بررسی مجدد وضعیت پرداخت"
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
-                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
-                    app:layout_constraintTop_toBottomOf="@+id/network_ping_layout"
-                    app:layout_constraintVertical_bias="0.4">
-
-                </ir.saltech.freedom.ui.view.RowButton>
+                    app:layout_constraintEnd_toEndOf="@+id/checking_services"
+                    app:layout_constraintStart_toStartOf="@+id/checking_services"
+                    app:layout_constraintTop_toBottomOf="@+id/checking_services"
+                    app:layout_constraintVertical_bias="0.32" />
 
                 <LinearLayout
-                    android:id="@+id/share_link_layout"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/row_button_bg"
-                    android:backgroundTint="#323232"
-                    android:backgroundTintMode="src_in"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingLeft="16dp"
-                    android:paddingTop="13dp"
-                    android:paddingRight="16dp"
-                    android:paddingBottom="13dp"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="@+id/show_links_btn"
-                    app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
-                    app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
-                    app:layout_constraintTop_toTopOf="@+id/show_links_btn">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        app:srcCompat="@drawable/ic_share_24dp"
-                        app:tint="@color/white" />
-
-                    <TextView
-                        android:id="@+id/share_link_text"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:singleLine="true"
-                        android:text="YOUR_LINK"
-                        android:textColor="@color/white" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/remaining_of_service_layout"
+                    android:id="@+id/checking_services"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
@@ -681,305 +446,552 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/fabProgressCircle">
+                    app:layout_constraintTop_toTopOf="parent">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/remaining_traffic_text"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="5dp"
-                            android:fontFamily="@font/peyda_bold"
-                            android:gravity="center"
-                            android:text="@string/remaining_traffic_text"
-                            android:textColor="@color/color_secondary" />
-
-                        <ProgressBar
-                            android:id="@+id/remaining_traffic_bar"
-                            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:max="100"
-                            android:progressBackgroundTint="@color/color_secondary"
-                            android:progressTint="@color/color_secondary"
-                            android:rotation="180" />
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/remaining_days_text"
+                    <ProgressBar
+                        android:id="@+id/progressBar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:fontFamily="@font/peyda_bold"
-                        android:gravity="center"
-                        android:text="@string/remaining_days_text"
-                        android:textColor="@color/color_secondary" />
-
-                </LinearLayout>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/purchase_service_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorBg"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="64dp"
-                android:fontFamily="@font/peyda_black"
-                android:text="خرید سرویس جدید"
-                android:textAlignment="center"
-                android:textColor="@color/colorAccent"
-                android:textSize="24sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <LinearLayout
-                android:id="@+id/linearLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="24dp"
-                android:gravity="right|center_vertical"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView2"
-                tools:ignore="RtlHardcoded">
-
-                <Spinner
-                    android:id="@+id/vsp_selection"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layoutDirection="rtl"
-                    android:fontFamily="@font/peyda_regular"
-                    android:nestedScrollingEnabled="true"
-                    android:textDirection="rtl" />
-
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/peyda_medium"
-                    android:text="فراهم کننده خدمات:"
-                    android:textColorLink="@color/color_secondary"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linearLayout2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="24dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="@+id/linearLayout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/linearLayout">
-
-                <TextView
-                    android:id="@+id/wanted_traffic_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:fontFamily="@font/peyda_medium"
-                    android:text="@string/wanted_traffic_text"
-                    android:textColorLink="@color/color_secondary"
-                    android:textSize="16sp" />
-
-                <SeekBar
-                    android:id="@+id/wanted_traffic_bar"
-                    style="@style/Widget.AppCompat.SeekBar.Discrete"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:max="10"
-                    android:progress="1" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/peyda_medium"
-                android:text="⚠️ به طور پیش فرض، تا اطلاع ثانوی، دوره 30 روزه و 2 کاربر برای سرویس اعمال می گردد."
-                android:textColor="@color/color_secondary"
-                android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="@+id/linearLayout2"
-                app:layout_constraintStart_toStartOf="@+id/linearLayout2"
-                app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
-
-            <LinearLayout
-                android:id="@+id/calculate_price_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="@+id/textView4"
-                app:layout_constraintStart_toStartOf="@+id/textView4"
-                app:layout_constraintTop_toBottomOf="@+id/textView4">
-
-                <LinearLayout
-                    android:id="@+id/check_calculated_price"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
+                        android:indeterminateOnly="true" />
 
                     <TextView
-                        android:id="@+id/textView5"
+                        android:id="@+id/checking_services_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="5dp"
-                        android:layout_weight="1"
+                        android:layout_marginTop="3dp"
                         android:fontFamily="@font/peyda_bold"
-                        android:gravity="center"
-                        android:text="در حال محاسبه قیمت ..."
+                        android:text="در حال بررسی سرویس"
                         android:textColor="@color/colorAccent"
                         android:textSize="16sp" />
 
+                </LinearLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/connect_service"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/colorBg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="1.0">
+
+
+                    <TextView
+                        android:id="@+id/connect_service_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/peyda_bold"
+                        android:textAlignment="center"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <LinearLayout
+                        android:id="@+id/connection_type_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:orientation="horizontal"
+                        android:scaleX="1.05"
+                        android:scaleY="1.05"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toTopOf="@+id/fabProgressCircle"
+                        app:layout_constraintEnd_toEndOf="@+id/connect_service_status"
+                        app:layout_constraintStart_toStartOf="@+id/connect_service_status"
+                        app:layout_constraintTop_toBottomOf="@+id/connect_service_status">
+
+                        <ImageView
+                            android:id="@+id/laptop_schema"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/client_scheme"
+                            app:tint="@color/color_secondary" />
+
+                        <ImageView
+                            android:id="@+id/connection_type_schema"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:rotation="90"
+                            app:srcCompat="@drawable/using_direct"
+                            app:tint="@color/color_secondary" />
+
+                        <ImageView
+                            android:id="@+id/imageView4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            app:srcCompat="@drawable/net_scheme"
+                            app:tint="@color/color_secondary" />
+                    </LinearLayout>
+
                     <ProgressBar
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginTop="2dp"
-                        app:tint="@color/color_secondary" />
+                        android:id="@+id/trying_to_connect_service"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:scaleX="1.15"
+                        android:scaleY="1.15"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="@+id/fabProgressCircle"
+                        app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                        app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                        app:layout_constraintTop_toTopOf="@+id/fabProgressCircle" />
+
+                    <com.github.jorgecastilloprz.FABProgressCircle
+                        android:id="@+id/fabProgressCircle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="24dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/fab"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_gravity="bottom|end"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_marginBottom="16dp"
+                            android:clickable="true"
+                            android:contentDescription="TODO"
+                            android:focusable="true"
+                            android:nextFocusLeft="@+id/layout_test"
+                            android:src="@drawable/service_not_connected"
+                            android:tint="@color/color_material_button_text"
+                            app:backgroundTint="@color/color_material_button"
+                            app:fabCustomSize="185dp"
+                            app:layout_anchorGravity="bottom|right|end"
+                            app:maxImageSize="115dp" />
+
+                    </com.github.jorgecastilloprz.FABProgressCircle>
+
+                    <ir.saltech.freedom.ui.view.RowButton
+                        android:id="@+id/check_connection_ping"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:src="@drawable/check_network_ping"
+                        android:text="@string/check_connection_ping_text"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                        app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                        app:layout_constraintTop_toBottomOf="@+id/fabProgressCircle"
+                        app:layout_constraintVertical_bias="0.29000002" />
+
+                    <LinearLayout
+                        android:id="@+id/network_ping_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+                        app:layout_constraintLeft_toLeftOf="@id/fabProgressCircle"
+                        app:layout_constraintRight_toRightOf="@id/fabProgressCircle"
+                        app:layout_constraintTop_toBottomOf="@id/fabProgressCircle">
+
+                        <ImageView
+                            android:id="@+id/network_ping_img"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/gathering_network_ping"
+                            app:tint="@color/color_secondary" />
+
+                        <TextView
+                            android:id="@+id/network_ping_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginTop="3dp"
+                            android:fontFamily="@font/peyda_black"
+                            android:text="   ..."
+                            android:textColor="@color/color_secondary"
+                            android:textSize="18sp" />
+
+                    </LinearLayout>
+
+                    <ir.saltech.freedom.ui.view.RowButton
+                        android:id="@+id/show_links_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/show_links"
+                        android:text="نمایش لینک"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                        app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                        app:layout_constraintTop_toBottomOf="@+id/network_ping_layout"
+                        app:layout_constraintVertical_bias="0.4">
+
+                    </ir.saltech.freedom.ui.view.RowButton>
+
+                    <LinearLayout
+                        android:id="@+id/share_link_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/row_button_bg"
+                        android:backgroundTint="#323232"
+                        android:backgroundTintMode="src_in"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingLeft="16dp"
+                        android:paddingTop="13dp"
+                        android:paddingRight="16dp"
+                        android:paddingBottom="13dp"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="@+id/show_links_btn"
+                        app:layout_constraintEnd_toEndOf="@+id/fabProgressCircle"
+                        app:layout_constraintStart_toStartOf="@+id/fabProgressCircle"
+                        app:layout_constraintTop_toTopOf="@+id/show_links_btn">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:srcCompat="@drawable/ic_share_24dp"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:id="@+id/share_link_text"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:text="YOUR_LINK"
+                            android:textColor="@color/white" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/remaining_of_service_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/fabProgressCircle">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/remaining_traffic_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="5dp"
+                                android:fontFamily="@font/peyda_bold"
+                                android:gravity="center"
+                                android:text="@string/remaining_traffic_text"
+                                android:textColor="@color/color_secondary" />
+
+                            <ProgressBar
+                                android:id="@+id/remaining_traffic_bar"
+                                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:max="100"
+                                android:progressBackgroundTint="@color/color_secondary"
+                                android:progressTint="@color/color_secondary"
+                                android:rotation="180" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/remaining_days_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:fontFamily="@font/peyda_bold"
+                            android:gravity="center"
+                            android:text="@string/remaining_days_text"
+                            android:textColor="@color/color_secondary" />
+
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/purchase_service_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBg"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="64dp"
+                    android:fontFamily="@font/peyda_black"
+                    android:text="خرید سرویس جدید"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="24sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:id="@+id/linearLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:gravity="right|center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView2"
+                    tools:ignore="RtlHardcoded">
+
+                    <Spinner
+                        android:id="@+id/vsp_selection"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/peyda_regular"
+                        android:layoutDirection="rtl"
+                        android:nestedScrollingEnabled="true"
+                        android:textDirection="rtl" />
+
+                    <TextView
+                        android:id="@+id/textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/peyda_medium"
+                        android:text="فراهم کننده خدمات:"
+                        android:textColorLink="@color/color_secondary"
+                        android:textSize="16sp" />
+
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/calculated_price_layout"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/linearLayout2"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="24dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="@+id/linearLayout"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
                     <TextView
-                        android:id="@+id/calculated_price_text"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/wanted_traffic_text"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="5dp"
+                        android:layout_marginBottom="8dp"
                         android:fontFamily="@font/peyda_medium"
-                        android:text="@string/calculated_costumer_price_text"
-                        android:textColor="@color/colorPrimaryDark"
+                        android:text="@string/wanted_traffic_text"
+                        android:textColorLink="@color/color_secondary"
                         android:textSize="16sp" />
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        app:srcCompat="@drawable/ic_price"
-                        android:layout_marginTop="2dp"
-                        app:tint="@color/colorPrimaryDark" />
+                    <SeekBar
+                        android:id="@+id/wanted_traffic_bar"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="10"
+                        android:progress="1" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/peyda_medium"
+                    android:text="⚠️ به طور پیش فرض، تا اطلاع ثانوی، دوره 30 روزه و 2 کاربر برای سرویس اعمال می گردد."
+                    android:textColor="@color/color_secondary"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="@+id/linearLayout2"
+                    app:layout_constraintStart_toStartOf="@+id/linearLayout2"
+                    app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+
+                <LinearLayout
+                    android:id="@+id/calculate_price_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="@+id/textView4"
+                    app:layout_constraintStart_toStartOf="@+id/textView4"
+                    app:layout_constraintTop_toBottomOf="@+id/textView4">
+
+                    <LinearLayout
+                        android:id="@+id/check_calculated_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/textView5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/peyda_bold"
+                            android:gravity="center"
+                            android:text="در حال محاسبه قیمت ..."
+                            android:textColor="@color/colorAccent"
+                            android:textSize="16sp" />
+
+                        <ProgressBar
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginTop="2dp"
+                            app:tint="@color/color_secondary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/calculated_price_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/calculated_price_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="5dp"
+                            android:fontFamily="@font/peyda_medium"
+                            android:text="@string/calculated_costumer_price_text"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginTop="2dp"
+                            app:srcCompat="@drawable/ic_price"
+                            app:tint="@color/colorPrimaryDark" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <ir.saltech.freedom.ui.view.RowButton
+                    android:id="@+id/submit_request_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:src="@drawable/ic_action_done"
+                    android:text="تأیید درخواست"
+                    app:layout_constraintEnd_toEndOf="@+id/linearLayout2"
+                    app:layout_constraintStart_toStartOf="@+id/linearLayout2"
+                    app:layout_constraintTop_toBottomOf="@+id/calculate_price_layout" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/no_internet_connection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/no_internet_img"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/no_internet_connection"
+                    app:tint="@color/color_secondary" />
+
+                <TextView
+                    android:id="@+id/no_internet_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/peyda_black"
+                    android:gravity="center"
+                    android:text="اینترنت در دسترس نمی باشد!"
+                    android:textColor="@color/color_secondary"
+                    android:textSize="18sp" />
 
             </LinearLayout>
 
-            <ir.saltech.freedom.ui.view.RowButton
-                android:id="@+id/submit_request_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
-                android:src="@drawable/ic_action_done"
-                android:text="تأیید درخواست"
-                app:layout_constraintEnd_toEndOf="@+id/linearLayout2"
-                app:layout_constraintStart_toStartOf="@+id/linearLayout2"
-                app:layout_constraintTop_toBottomOf="@+id/calculate_price_layout" />
+            <LinearLayout
+                android:id="@+id/error_occurred"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/error_occurred_img"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_warning"
+                    app:tint="@color/color_secondary" />
+
+                <TextView
+                    android:id="@+id/error_occurred_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="@font/peyda_black"
+                    android:gravity="center"
+                    android:text="در حین انجام درخواست، خطایی رخ داد!"
+                    android:textColor="@color/color_secondary"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 
-        <LinearLayout
-            android:id="@+id/no_internet_connection"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorBg"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/no_internet_img"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/no_internet_connection"
-                app:tint="@color/color_secondary" />
-
-            <TextView
-                android:id="@+id/no_internet_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:fontFamily="@font/peyda_black"
-                android:gravity="center"
-                android:text="اینترنت در دسترس نمی باشد!"
-                android:textColor="@color/color_secondary"
-                android:textSize="18sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/error_occurred"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorBg"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/error_occurred_img"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_warning"
-                app:tint="@color/color_secondary" />
-
-            <TextView
-                android:id="@+id/error_occurred_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:fontFamily="@font/peyda_black"
-                android:gravity="center"
-                android:text="در حین انجام درخواست، خطایی رخ داد!"
-                android:textColor="@color/color_secondary"
-                android:textSize="18sp" />
-
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

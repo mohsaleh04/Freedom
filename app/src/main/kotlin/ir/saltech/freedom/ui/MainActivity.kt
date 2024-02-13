@@ -24,6 +24,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
@@ -45,7 +46,6 @@ import com.tbruyelle.rxpermissions.RxPermissions
 import com.tencent.mmkv.MMKV
 import ir.saltech.freedom.AppConfig
 import ir.saltech.freedom.AppConfig.ANG_PACKAGE
-import ir.saltech.freedom.AppConfig.PREF_ALLOW_INSECURE
 import ir.saltech.freedom.AppConfig.PREF_MUX_CONCURRENCY
 import ir.saltech.freedom.AppConfig.PREF_MUX_ENABLED
 import ir.saltech.freedom.AppConfig.PREF_MUX_XUDP_CONCURRENCY
@@ -72,6 +72,7 @@ import ir.saltech.freedom.extension.toGigabytes
 import ir.saltech.freedom.extension.toast
 import ir.saltech.freedom.helper.SimpleItemTouchHelperCallback
 import ir.saltech.freedom.service.V2RayServiceManager
+import ir.saltech.freedom.ui.view.KeyboardDetected
 import ir.saltech.freedom.util.AngConfigManager
 import ir.saltech.freedom.util.MmkvManager
 import ir.saltech.freedom.util.NetworkMonitor
@@ -84,7 +85,6 @@ import kotlinx.coroutines.launch
 import me.drakeet.support.toast.ToastCompat
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
@@ -148,7 +148,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         setContentView(view)
         title = getString(R.string.title_server)
         setSupportActionBar(binding.toolbar)
-
+        KeyboardDetected.assistActivity(this)
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
@@ -1909,7 +1909,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun setSignUpLayout() {
+        binding.signupPhone.visibility = GONE
         binding.signupUsername.visibility = VISIBLE
+        binding.customerPhoneHelp.visibility = GONE
         binding.signupLoginBtn.isEnabled = false
         binding.signupLoginBtn.text = "ثبت نام در برنامه"
         binding.signupLoginBtn.icon = AppCompatResources.getDrawable(this, R.drawable.signup)!!
@@ -1990,9 +1992,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         //Toast.makeText(activity, "Saved User => name: ${user2.userName} || phoneNumber: ${user2.phoneNumber}", Toast.LENGTH_SHORT).show()
         mainViewModel.sendSignUpRequest(user!!, object : ApiCallback<ResponseMsg> {
             override fun onSuccessful(responseObject: ResponseMsg) {
-                binding.signupLoginBtn.isEnabled = true
-                binding.signupUsername.isEnabled = true
-                binding.signupPhone.isEnabled = true
                 sendVerifyRequest()
             }
 
