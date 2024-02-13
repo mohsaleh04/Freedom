@@ -20,6 +20,19 @@
       "filters": [
         {
           "filterType": "ABI",
+          "value": "mips64"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 1552551,
+      "versionName": "2.14.2031",
+      "outputFile": "Prox_2.14.2031_mips64.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
           "value": "armeabi-v7a"
         }
       ],
@@ -46,13 +59,13 @@
       "filters": [
         {
           "filterType": "ABI",
-          "value": "armeabi"
+          "value": "arm64-v8a"
         }
       ],
       "attributes": [],
       "versionCode": 1552551,
       "versionName": "2.14.2031",
-      "outputFile": "Prox_2.14.2031_armeabi.apk"
+      "outputFile": "Prox_2.14.2031_arm64-v8a.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -72,26 +85,26 @@
       "filters": [
         {
           "filterType": "ABI",
-          "value": "arm64-v8a"
+          "value": "x86"
         }
       ],
       "attributes": [],
       "versionCode": 1552551,
       "versionName": "2.14.2031",
-      "outputFile": "Prox_2.14.2031_arm64-v8a.apk"
+      "outputFile": "Prox_2.14.2031_x86.apk"
     },
     {
       "type": "ONE_OF_MANY",
       "filters": [
         {
           "filterType": "ABI",
-          "value": "mips64"
+          "value": "armeabi"
         }
       ],
       "attributes": [],
       "versionCode": 1552551,
       "versionName": "2.14.2031",
-      "outputFile": "Prox_2.14.2031_mips64.apk"
+      "outputFile": "Prox_2.14.2031_armeabi.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -105,19 +118,6 @@
       "versionCode": 1552551,
       "versionName": "2.14.2031",
       "outputFile": "Prox_2.14.2031_x86_64.apk"
-    },
-    {
-      "type": "ONE_OF_MANY",
-      "filters": [
-        {
-          "filterType": "ABI",
-          "value": "x86"
-        }
-      ],
-      "attributes": [],
-      "versionCode": 1552551,
-      "versionName": "2.14.2031",
-      "outputFile": "Prox_2.14.2031_x86.apk"
     }
   ],
   "elementType": "File",
@@ -127,14 +127,14 @@
       "maxApi": 30,
       "baselineProfiles": [
         "baselineProfiles/1/Prox_2.14.2031_null.dm",
+        "baselineProfiles/1/Prox_2.14.2031_mips64.dm",
         "baselineProfiles/1/Prox_2.14.2031_armeabi-v7a.dm",
         "baselineProfiles/1/Prox_2.14.2031_riscv64.dm",
-        "baselineProfiles/1/Prox_2.14.2031_armeabi.dm",
-        "baselineProfiles/1/Prox_2.14.2031_mips.dm",
         "baselineProfiles/1/Prox_2.14.2031_arm64-v8a.dm",
-        "baselineProfiles/1/Prox_2.14.2031_mips64.dm",
-        "baselineProfiles/1/Prox_2.14.2031_x86_64.dm",
-        "baselineProfiles/1/Prox_2.14.2031_x86.dm"
+        "baselineProfiles/1/Prox_2.14.2031_mips.dm",
+        "baselineProfiles/1/Prox_2.14.2031_x86.dm",
+        "baselineProfiles/1/Prox_2.14.2031_armeabi.dm",
+        "baselineProfiles/1/Prox_2.14.2031_x86_64.dm"
       ]
     },
     {
@@ -142,14 +142,14 @@
       "maxApi": 2147483647,
       "baselineProfiles": [
         "baselineProfiles/0/Prox_2.14.2031_null.dm",
+        "baselineProfiles/0/Prox_2.14.2031_mips64.dm",
         "baselineProfiles/0/Prox_2.14.2031_armeabi-v7a.dm",
         "baselineProfiles/0/Prox_2.14.2031_riscv64.dm",
-        "baselineProfiles/0/Prox_2.14.2031_armeabi.dm",
-        "baselineProfiles/0/Prox_2.14.2031_mips.dm",
         "baselineProfiles/0/Prox_2.14.2031_arm64-v8a.dm",
-        "baselineProfiles/0/Prox_2.14.2031_mips64.dm",
-        "baselineProfiles/0/Prox_2.14.2031_x86_64.dm",
-        "baselineProfiles/0/Prox_2.14.2031_x86.dm"
+        "baselineProfiles/0/Prox_2.14.2031_mips.dm",
+        "baselineProfiles/0/Prox_2.14.2031_x86.dm",
+        "baselineProfiles/0/Prox_2.14.2031_armeabi.dm",
+        "baselineProfiles/0/Prox_2.14.2031_x86_64.dm"
       ]
     }
   ],
