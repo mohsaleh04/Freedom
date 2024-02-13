@@ -45,14 +45,17 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             multiDexEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             ndk {
                 abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
             }
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
             multiDexEnabled = true
+            signingConfig = signingConfigs.getByName("debug")
             ndk {
                 abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
             }

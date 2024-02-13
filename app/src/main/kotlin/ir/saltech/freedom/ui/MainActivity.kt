@@ -96,6 +96,7 @@ private const val OTP_EXPIRATION_TIME: Long = 120000
 var isDisconnectingServer = false
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private var isOtpWanted: Boolean = false
     private var isServiceRegistrationWanted: Boolean = false
     private var usingLocalLink: Boolean = false
     private var userInitialized: Boolean = false
@@ -292,6 +293,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                             "TAG",
                                             "Service registration error: ${response?.message}"
                                         )
+                                        if (response != null)
+                                            Log.e("TAG", "Service registration failed: ${response.message}")
+                                        else
+                                            Log.e("TAG", "Service registration failed: ${t?.message}")
                                         if (response != null) {
                                             user = user!!.copy(service = null)
                                             mainViewModel.saveUser(user!!)
@@ -357,6 +362,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                                 override fun onSuccessful(
                                                                     responseObject: Payment
                                                                 ) {
+                                                                    if (response != null)
+                                                                        Log.e("TAG", "Service registration failed: ${response.message}")
+                                                                    else
+                                                                        Log.e("TAG", "Service registration failed: ${t?.message}")
                                                                     binding.checkingServices.visibility =
                                                                         GONE
                                                                     binding.errorOccurred.visibility =
@@ -369,6 +378,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                                     response: ResponseMsg?,
                                                                     t: Throwable?
                                                                 ) {
+                                                                    if (response != null)
+                                                                        Log.e("TAG", "Service registration failed: ${response.message}")
+                                                                    else
+                                                                        Log.e("TAG", "Service registration failed: ${t?.message}")
                                                                     binding.checkingServices.visibility =
                                                                         GONE
                                                                     binding.errorOccurred.visibility =
@@ -395,6 +408,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                 object : ApiCallback<Payment> {
                                     @SuppressLint("SetTextI18n")
                                     override fun onSuccessful(responseObject: Payment) {
+
                                         binding.checkingServices.visibility = GONE
                                         binding.errorOccurred.visibility = VISIBLE
                                         binding.errorOccurredText.text =
@@ -406,6 +420,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                         response: ResponseMsg?,
                                         t: Throwable?
                                     ) {
+                                        if (response != null)
+                                            Log.e("TAG", "Refund payment failed: ${response.message}")
+                                        else
+                                            Log.e("TAG", "Refund payment failed: ${t?.message}")
                                         binding.checkingServices.visibility = GONE
                                         binding.errorOccurred.visibility = VISIBLE
                                         binding.errorOccurredText.text =
@@ -460,7 +478,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
         mainViewModel.updateOtpAction.observe(this) {
-            checkOtpDoLogin(it)
+            if (isOtpWanted) {
+                checkOtpDoLogin(it)
+                isOtpWanted = false
+            }
         }
         mainViewModel.updateListAction.observe(this) { index ->
             if (index >= 0) {
@@ -1667,8 +1688,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     override fun onFailure(response: ResponseMsg?, t: Throwable?) {
                         user = user!!.copy(service = null)
                         binding.checkingServices.visibility = GONE
-                        binding.errorOccurred.visibility = VISIBLE
-                        binding.errorOccurredText.text = "خطا حین پرداخت: ${response?.message}"
                     }
 
                 })
@@ -2048,6 +2067,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         user = User(phoneNumber = phone)
         mainViewModel.sendVerifyPhoneRequest(user!!, object : ApiCallback<ResponseMsg> {
             override fun onSuccessful(responseObject: ResponseMsg) {
+                isOtpWanted = true
                 binding.signupLayout.visibility = GONE
                 binding.verifyLayout.visibility = VISIBLE
                 binding.customerPhoneHelp.visibility = GONE

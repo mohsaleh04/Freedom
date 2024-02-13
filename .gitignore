@@ -1,6 +1,6 @@
 *.dat
 *.jks
-app/release/output.json
+/app/release/output-metadata.json
 .idea/
 .gradle/
 *.iml
