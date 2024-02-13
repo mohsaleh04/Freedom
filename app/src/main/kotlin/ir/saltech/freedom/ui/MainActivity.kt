@@ -1351,7 +1351,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         user = user!!.copy(service = null, payment = null)
                         mainViewModel.saveUser(user!!)
                     } else {
-                        Utils.stopVService(this@MainActivity, mainViewModel)
+                        if (mainViewModel.isRunning.value == true)
+                            Utils.stopVService(this@MainActivity, mainViewModel)
                         if (response?.message == "xuser not found") {
                             binding.checkingServices.visibility = VISIBLE
                             binding.checkingServicesText.text = "در حال تخصیص سرویس ..."
