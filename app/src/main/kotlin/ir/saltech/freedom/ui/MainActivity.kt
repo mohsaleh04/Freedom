@@ -24,7 +24,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
@@ -321,52 +320,66 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                                                 })
                                         } else {
-                                            mainViewModel.sendGetServiceRequest(user!!, object : ApiCallback<Service> {
-                                                override fun onSuccessful(responseObject: Service) {
-                                                    binding.checkingServices.visibility = GONE
-                                                    binding.homeLayout.visibility = VISIBLE
-                                                    toast("سرویس با موفقیت ثبت و فعالسازی شد.")
-                                                    user = user!!.copy(payment = null, service = user!!.service!!.copy(trackId = payment.trackId))
-                                                    mainViewModel.saveUser(user!!)
-                                                    saveUsersPayment(null) // FIXME: May be this command incorrect
-                                                    AlertDialog.Builder(this@MainActivity)
-                                                        .setIcon(R.drawable.ic_warning)
-                                                        .setTitle("لطفاً صبر کنید!!!")
-                                                        .setMessage("ممکن است تا فعالسازی کامل حداکثر 5 دقیقه زمان نیاز باشد!\nلطفاً شکیبا باشید.")
-                                                        .setPositiveButton("متوجه شدم"){ dialog, _ ->
-                                                            dialog.dismiss()
-                                                        }
-                                                        .setCancelable(false)
-                                                        .show()
-                                                    doConfigService(responseObject)
-                                                }
-
-                                                override fun onFailure(response: ResponseMsg?, t: Throwable?) {
-                                                    binding.checkingServicesText.text =
-                                                        "در حال ثبت درخواست عودت وجه ..."
-                                                    mainViewModel.sendRefundPaymentRequest(
-                                                        payment,
-                                                        object : ApiCallback<Payment> {
-                                                            override fun onSuccessful(responseObject: Payment) {
-                                                                binding.checkingServices.visibility = GONE
-                                                                binding.errorOccurred.visibility = VISIBLE
-                                                                binding.errorOccurredText.text =
-                                                                    "حین ثبت سرویس خطایی رخ داد.\nوجه شما تا 72 ساعت آتی عودت داده می شود."
+                                            mainViewModel.sendGetServiceRequest(
+                                                user!!,
+                                                object : ApiCallback<Service> {
+                                                    override fun onSuccessful(responseObject: Service) {
+                                                        binding.checkingServices.visibility = GONE
+                                                        binding.homeLayout.visibility = VISIBLE
+                                                        toast("سرویس با موفقیت ثبت و فعالسازی شد.")
+                                                        user = user!!.copy(
+                                                            payment = null,
+                                                            service = user!!.service!!.copy(trackId = payment.trackId)
+                                                        )
+                                                        mainViewModel.saveUser(user!!)
+                                                        saveUsersPayment(null) // FIXME: May be this command incorrect
+                                                        AlertDialog.Builder(this@MainActivity)
+                                                            .setIcon(R.drawable.ic_warning)
+                                                            .setTitle("لطفاً صبر کنید!!!")
+                                                            .setMessage("ممکن است تا فعالسازی کامل حداکثر 5 دقیقه زمان نیاز باشد!\nلطفاً شکیبا باشید.")
+                                                            .setPositiveButton("متوجه شدم") { dialog, _ ->
+                                                                dialog.dismiss()
                                                             }
+                                                            .setCancelable(false)
+                                                            .show()
+                                                        doConfigService(responseObject)
+                                                    }
 
-                                                            override fun onFailure(
-                                                                response: ResponseMsg?,
-                                                                t: Throwable?
-                                                            ) {
-                                                                binding.checkingServices.visibility = GONE
-                                                                binding.errorOccurred.visibility = VISIBLE
-                                                                binding.errorOccurredText.text =
-                                                                    "حین ثبت سرویس خطایی رخ داد.\nجهت عودت وجه، با پشتیبانی تماس بگیرید."
-                                                            }
+                                                    override fun onFailure(
+                                                        response: ResponseMsg?,
+                                                        t: Throwable?
+                                                    ) {
+                                                        binding.checkingServicesText.text =
+                                                            "در حال ثبت درخواست عودت وجه ..."
+                                                        mainViewModel.sendRefundPaymentRequest(
+                                                            payment,
+                                                            object : ApiCallback<Payment> {
+                                                                override fun onSuccessful(
+                                                                    responseObject: Payment
+                                                                ) {
+                                                                    binding.checkingServices.visibility =
+                                                                        GONE
+                                                                    binding.errorOccurred.visibility =
+                                                                        VISIBLE
+                                                                    binding.errorOccurredText.text =
+                                                                        "حین ثبت سرویس خطایی رخ داد.\nوجه شما تا 72 ساعت آتی عودت داده می شود."
+                                                                }
 
-                                                        })
-                                                }
-                                            })
+                                                                override fun onFailure(
+                                                                    response: ResponseMsg?,
+                                                                    t: Throwable?
+                                                                ) {
+                                                                    binding.checkingServices.visibility =
+                                                                        GONE
+                                                                    binding.errorOccurred.visibility =
+                                                                        VISIBLE
+                                                                    binding.errorOccurredText.text =
+                                                                        "حین ثبت سرویس خطایی رخ داد.\nجهت عودت وجه، با پشتیبانی تماس بگیرید."
+                                                                }
+
+                                                            })
+                                                    }
+                                                })
                                         }
                                     }
 
@@ -380,6 +393,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             mainViewModel.sendRefundPaymentRequest(
                                 payment,
                                 object : ApiCallback<Payment> {
+                                    @SuppressLint("SetTextI18n")
                                     override fun onSuccessful(responseObject: Payment) {
                                         binding.checkingServices.visibility = GONE
                                         binding.errorOccurred.visibility = VISIBLE
@@ -387,6 +401,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                             "حین ثبت سرویس خطایی رخ داد.\nوجه شما تا 72 ساعت آتی عودت داده می شود."
                                     }
 
+                                    @SuppressLint("SetTextI18n")
                                     override fun onFailure(
                                         response: ResponseMsg?,
                                         t: Throwable?
@@ -1384,8 +1399,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                     }
 
                                 })
-                        }
-                        else if (response?.message?.contains("service not found") == true) {
+                        } else if (response?.message?.contains("service not found") == true) {
                             binding.checkingServices.visibility = GONE
                             user = user!!.copy(service = null)
                             mainViewModel.saveUser(user!!)
@@ -1402,7 +1416,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                     ).show()
                                     user = null
                                     mainViewModel.saveUser(null)
-                                    startActivity(Intent(this@MainActivity, MainActivity::class.java))
+                                    startActivity(
+                                        Intent(
+                                            this@MainActivity,
+                                            MainActivity::class.java
+                                        )
+                                    )
                                 } else {
                                     binding.errorOccurred.visibility = VISIBLE
                                     binding.errorOccurredText.text =
