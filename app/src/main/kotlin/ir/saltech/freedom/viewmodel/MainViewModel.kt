@@ -204,7 +204,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun testCurrentServerRealPing() {
+    fun testCurrentServerRealPing(user: User?) {
+        if (isRunning.value == true) {
+            if (user != null) {
+                if (user.service != null) {
+                    val consumedTraffic = user.service.upload!! + user.service.download!!
+                    if (user.service.totalTraffic <= consumedTraffic) {
+                        Utils.stopVService(context!!, this)
+                        return
+                    }
+                }
+            }
+        }
         MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_MEASURE_DELAY, "")
     }
 
@@ -379,8 +390,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             ApiClient.freedom.getLinks(user.accessToken.asToken(), user).call(callback)
     }
 
-    fun sendGetVSPListRequest(callback: ApiCallback<VspList>) {
-        ApiClient.freedom.getVspList().call(callback)
+    fun sendGetVSPListRequest(callback: ApiCallback<VspList>, service: Service? = null) {
+        if (service != null)
+            ApiClient.freedom.getVspList(service).call(callback)
+        else
+            ApiClient.freedom.getVspList().call(callback)
     }
 
     fun sendCalculatePriceRequest(user: User, callback: ApiCallback<Service>) {

@@ -279,8 +279,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                         binding.checkingServices.visibility = GONE
                                         binding.homeLayout.visibility = VISIBLE
                                         user =
-                                            user!!.copy(
-                                                service = user!!.service!!.copy(trackId = payment.trackId)
+                                            user?.copy(
+                                                service = user?.service?.copy(trackId = payment.trackId)
                                             )
                                         mainViewModel.saveUser(user!!)
                                         toast("سرویس با موفقیت ثبت شد.")
@@ -294,9 +294,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                             "Service registration error: ${response?.message}"
                                         )
                                         if (response != null)
-                                            Log.e("TAG", "Service registration failed: ${response.message}")
+                                            Log.e(
+                                                "TAG",
+                                                "Service registration failed: ${response.message}"
+                                            )
                                         else
-                                            Log.e("TAG", "Service registration failed: ${t?.message}")
+                                            Log.e(
+                                                "TAG",
+                                                "Service registration failed: ${t?.message}"
+                                            )
                                         if (response != null) {
                                             user = user!!.copy(service = null)
                                             mainViewModel.saveUser(user!!)
@@ -363,9 +369,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                                     responseObject: Payment
                                                                 ) {
                                                                     if (response != null)
-                                                                        Log.e("TAG", "Service registration failed: ${response.message}")
+                                                                        Log.e(
+                                                                            "TAG",
+                                                                            "Service registration failed: ${response.message}"
+                                                                        )
                                                                     else
-                                                                        Log.e("TAG", "Service registration failed: ${t?.message}")
+                                                                        Log.e(
+                                                                            "TAG",
+                                                                            "Service registration failed: ${t?.message}"
+                                                                        )
                                                                     binding.checkingServices.visibility =
                                                                         GONE
                                                                     binding.errorOccurred.visibility =
@@ -379,9 +391,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                                     t: Throwable?
                                                                 ) {
                                                                     if (response != null)
-                                                                        Log.e("TAG", "Service registration failed: ${response.message}")
+                                                                        Log.e(
+                                                                            "TAG",
+                                                                            "Service registration failed: ${response.message}"
+                                                                        )
                                                                     else
-                                                                        Log.e("TAG", "Service registration failed: ${t?.message}")
+                                                                        Log.e(
+                                                                            "TAG",
+                                                                            "Service registration failed: ${t?.message}"
+                                                                        )
                                                                     binding.checkingServices.visibility =
                                                                         GONE
                                                                     binding.errorOccurred.visibility =
@@ -421,7 +439,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                         t: Throwable?
                                     ) {
                                         if (response != null)
-                                            Log.e("TAG", "Refund payment failed: ${response.message}")
+                                            Log.e(
+                                                "TAG",
+                                                "Refund payment failed: ${response.message}"
+                                            )
                                         else
                                             Log.e("TAG", "Refund payment failed: ${t?.message}")
                                         binding.checkingServices.visibility = GONE
@@ -517,7 +538,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {
                         if (mainViewModel.isRunning.value == true) {
-                            mainViewModel.testCurrentServerRealPing()
+                            mainViewModel.testCurrentServerRealPing(user)
                         }
                     }
             } else {
@@ -558,7 +579,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 binding.connectServiceStatus.text = "در حال اتصال ..."
                 connectLevel = 0
                 showTitleConnectingEffect()
-                mainViewModel.testCurrentServerRealPing()
+                mainViewModel.testCurrentServerRealPing(user)
                 //binding.checkConnectionPing.isEnabled = true
             } else {
                 if (binding.checkingServices.visibility == GONE && user != null) {
@@ -1395,13 +1416,37 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                     t: Throwable?
                                                 ) {
                                                     binding.checkingServices.visibility = GONE
-                                                    if (response?.message == "xuser not found" || response?.message == "service not found") {
-                                                        doPurchaseService()
+                                                    if (response?.message != null) {
+                                                        if (response.message == "xuser not found") {
+                                                            doPurchaseService()
+                                                        } else if (response.message.contains("service not found") || response.message.contains("service depleted")) {
+                                                            binding.checkingServices.visibility = GONE
+                                                            toast("سرویس شما به پایان رسیده است یا یافت نشد!")
+                                                            doPurchaseService(doRevival = true)
+                                                        } else {
+                                                            binding.checkingServices.visibility =
+                                                                GONE
+                                                            binding.errorOccurred.visibility =
+                                                                VISIBLE
+                                                            binding.errorOccurredText.text =
+                                                                "خطا حین دستیابی به سرویس: ${response.message}"
+                                                        }
                                                     } else {
-                                                        binding.checkingServices.visibility = GONE
-                                                        binding.errorOccurred.visibility = VISIBLE
-                                                        binding.errorOccurredText.text =
-                                                            "خطا حین دستیابی به سرویس: ${response?.message}"
+                                                        if (t != null) {
+                                                            binding.checkingServices.visibility =
+                                                                GONE
+                                                            binding.errorOccurred.visibility =
+                                                                VISIBLE
+                                                            binding.errorOccurredText.text =
+                                                                "خطا حین دستیابی به سرویس: ${t?.message}"
+                                                        } else {
+                                                            binding.checkingServices.visibility =
+                                                                GONE
+                                                            binding.errorOccurred.visibility =
+                                                                VISIBLE
+                                                            binding.errorOccurredText.text =
+                                                                "خطا حین دستیابی به سرویس: خطای ناشناخته"
+                                                        }
                                                     }
                                                 }
 
@@ -1413,20 +1458,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                         if (response?.message == "user not found in service db") {
                                             doPurchaseService()
                                         } else {
-                                            binding.checkingServices.visibility = GONE
-                                            binding.errorOccurred.visibility = VISIBLE
-                                            binding.errorOccurredText.text =
-                                                "خطا حین تخصیص سرویس: ${response?.message}"
+                                            showError(response, t, "خطا حین تخصیص سرویس")
                                         }
                                     }
 
                                 })
-                        } else if (response?.message?.contains("service not found") == true) {
+                        } else if (response?.message?.contains("service not found") == true || response?.message?.contains("service depleted") == true) {
                             binding.checkingServices.visibility = GONE
-                            user = user!!.copy(service = null)
-                            mainViewModel.saveUser(user!!)
                             toast("سرویس شما به پایان رسیده است یا یافت نشد!")
-                            doPurchaseService()
+                            doPurchaseService(doRevival = true)
                         } else {
                             binding.checkingServices.visibility = GONE
                             if (response != null) {
@@ -1447,17 +1487,17 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                 } else {
                                     binding.errorOccurred.visibility = VISIBLE
                                     binding.errorOccurredText.text =
-                                        "خطا حین دستیابی به سرویس: ${response.message}"
+                                        "خطا حین بررسی سرویس: ${response.message}"
                                 }
                             } else {
                                 if (t != null) {
                                     binding.errorOccurred.visibility = VISIBLE
                                     binding.errorOccurredText.text =
-                                        "خطا حین دستیابی به سرویس: ${t.message}"
+                                        "خطا حین بررسی سرویس: ${t.message}"
                                 } else {
                                     binding.errorOccurred.visibility = VISIBLE
                                     binding.errorOccurredText.text =
-                                        "خطا حین دستیابی به سرویس: خطای ناشناخته"
+                                        "خطا حین بررسی سرویس: خطای ناشناخته"
                                 }
                             }
                         }
@@ -1548,7 +1588,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
-    fun doPurchaseService() {
+    fun doPurchaseService(doRevival: Boolean = false) {
         isServiceRegistrationWanted = true
         binding.wantedTrafficText.text =
             getString(R.string.wanted_traffic_text, 10)
@@ -1556,6 +1596,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         vspList.vspList.add("انتخاب کنید")
         mainViewModel.sendGetVSPListRequest(object : ApiCallback<VspList> {
             override fun onSuccessful(responseObject: VspList) {
+//                if (doRevival) {
+//                    user = user!!.copy(service = null)
+//                    mainViewModel.saveUser(user!!)
+//                }
                 binding.errorOccurred.visibility = GONE
                 vspList.vspList.addAll(1, responseObject.vspList)
                 binding.vspSelection.adapter =
@@ -1644,7 +1688,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 Log.e("TAG", "Failed to fetch virtual service providers list: ${response?.message}")
             }
 
-        })
+        }, user!!.service)
     }
 
     private fun doPaymentForPurchasedService() {
@@ -1828,7 +1872,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             if (mainViewModel.isRunning.value == true) {
                 binding.checkConnectionPing.text = "در حال بررسی ..."
                 binding.checkConnectionPing.isEnabled = false
-                mainViewModel.testCurrentServerRealPing()
+                mainViewModel.testCurrentServerRealPing(user)
             }
         }
         binding.connectionTypeLayout.setOnLongClickListener {

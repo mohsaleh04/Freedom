@@ -34,8 +34,11 @@ interface FreedomApi {
 	@POST("service/getLinks")
 	fun getLinks(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: User): Call<Service>
 
-	@GET("service/getVspList")
+	@POST("service/getVspList")
 	fun getVspList(): Call<VspList>
+
+	@POST("service/getVspList")
+	fun getVspList(@Body service: Service): Call<VspList>
 
 	@POST("service/estimateCost")
 	fun calculatePrice(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: Service): Call<Service>

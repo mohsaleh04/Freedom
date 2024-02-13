@@ -52,7 +52,7 @@ inline fun <reified T> Call<T>.call(callback: ApiCallback<T>) {
 					if (errorJson != null) {
 						val errorMsg = Gson().fromJson(errorJson.string(), ResponseMsg::class.java)
 						callback.onFailure(response = errorMsg)
-						Log.e("TAG", "ERROR OCCURRED: $errorJson")
+						Log.e("TAG", "ERROR OCCURRED: ${errorJson.string()} || ${response.code()} || ${response.message()}")
 					}
 				}
 			}

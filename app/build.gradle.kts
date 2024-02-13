@@ -26,8 +26,8 @@ android {
         applicationId = "ir.saltech.prox"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1551
-        versionName = "2.14.2031"
+        versionCode = 1555
+        versionName = "2.14.21"
         multiDexEnabled = true
         ndk {
             abiFilters += listOf("armeabi-v7a","arm64-v8a","x86","x86_64")
