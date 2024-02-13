@@ -1,4 +1,4 @@
-# Prox Launcher
+# Prox (Freedom)
 
 A v2ray based client application for Android, support [Xray core](https://github.com/XTLS/Xray-core) and [v2fly core](https://github.com/v2fly/v2ray-core)
 
