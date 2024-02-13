@@ -46,7 +46,10 @@ import com.tencent.mmkv.MMKV
 import ir.saltech.freedom.AppConfig
 import ir.saltech.freedom.AppConfig.ANG_PACKAGE
 import ir.saltech.freedom.AppConfig.PREF_ALLOW_INSECURE
+import ir.saltech.freedom.AppConfig.PREF_MUX_CONCURRENCY
 import ir.saltech.freedom.AppConfig.PREF_MUX_ENABLED
+import ir.saltech.freedom.AppConfig.PREF_MUX_XUDP_CONCURRENCY
+import ir.saltech.freedom.AppConfig.PREF_MUX_XUDP_QUIC
 import ir.saltech.freedom.AppConfig.PREF_SPEED_ENABLED
 import ir.saltech.freedom.BuildConfig
 import ir.saltech.freedom.R
@@ -171,6 +174,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         mainViewModel.updateConnectivityAction.value = NetworkMonitor(this).isNetworkAvailable()
         settingsStorage?.encode(PREF_SPEED_ENABLED, true)
         settingsStorage?.encode(PREF_MUX_ENABLED, true)
+        settingsStorage?.encode(PREF_MUX_XUDP_CONCURRENCY, 256)
+        settingsStorage?.encode(PREF_MUX_CONCURRENCY, 256)
+        settingsStorage?.encode(PREF_MUX_XUDP_QUIC, "allow")
         getPermissions()
         setupViewModel()
         onClicks()
