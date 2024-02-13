@@ -485,11 +485,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         }
                     }
             } else {
-                settingsStorage?.encode(PREF_MUX_ENABLED, false)
                 Log.i("SERVER_CONNECTION", "Connection failed: $it")
                 if (it != "اتصال به اینترنت شناسایی نشد:  context canceled") {
                     Utils.stopVService(this, mainViewModel)
                     if (it != "اتصال به اینترنت شناسایی نشد:  io: read/write on closed pipe") {
+                        settingsStorage?.encode(PREF_MUX_ENABLED, false)
+                        toast("در برقراری ارتباط خطایی رخ داد!\nدوباره تلاش کنید.")
                         if (startupCheckLink) {
                             // If the current link (global link) is corrupt, uses the tunnel link
                             if (user?.service!!.localLink != null) {
@@ -1268,9 +1269,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         binding.signupLoginLayout.visibility = GONE
         binding.homeLayout.visibility = VISIBLE
         binding.connectService.visibility = GONE
-        if (user!!.payment == null)
+        if (user!!.payment == null) {
             getUserService()
-        else {
+        } else {
             payment = user!!.payment!!
             checkPaymentResult()
         }
@@ -1696,7 +1697,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                 override fun onFailure(response: ResponseMsg?, t: Throwable?) {
                     binding.checkCalculatedPrice.visibility = GONE
-                    toast("خطا حین تخمین قیمت: ${response?.message}")
+                    showError(response, t, "خطا حین بررسی قیمت سرویس")
                 }
 
             })
@@ -1725,16 +1726,24 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                 override fun onFailure(response: ResponseMsg?, t: Throwable?) {
                     binding.loadingBar.visibility = GONE
-                    if (response != null) {
-                        Toast.makeText(
-                            activity,
-                            "خطای رمز یکبار مصرف: ${response.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    showError(response, t, "خطا حین بررسی رمز یکبار مصرف")
                 }
-
             })
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun showError(response: ResponseMsg?, t: Throwable?, message: String) {
+        if (response != null) {
+            binding.checkingServices.visibility = GONE
+            binding.errorOccurred.visibility = VISIBLE
+            binding.errorOccurredText.text =
+                "$message: ${response.message}"
+        } else {
+            binding.checkingServices.visibility = GONE
+            binding.errorOccurred.visibility = VISIBLE
+            binding.errorOccurredText.text =
+                "$message: ${t?.message}"
         }
     }
 
@@ -2004,11 +2013,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     if (response.message == "user already exist") {
                         sendVerifyRequest()
                     } else {
-                        Toast.makeText(activity, response.message, Toast.LENGTH_LONG).show()
+                        showError(response, t, "خطا حین ثبت نام کاربر")
                     }
                 } else {
-                    if (t != null)
-                        Toast.makeText(activity, t.message, Toast.LENGTH_SHORT).show()
+                    showError(null, t, "خطا حین ثبت نام کاربر")
                 }
             }
         })
@@ -2052,10 +2060,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     } else {
                         binding.signupPhone.isEnabled = true
                         Toast.makeText(activity, response.message, Toast.LENGTH_LONG).show()
+                        showError(response, t, "خطا حین درخواست رمز یکبار مصرف")
                     }
                 } else {
-                    if (t != null)
-                        Toast.makeText(activity, t.message, Toast.LENGTH_SHORT).show()
+                    showError(null, t, "خطا حین درخواست رمز یکبار مصرف")
                 }
             }
 
