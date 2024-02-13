@@ -45,6 +45,8 @@ import com.tbruyelle.rxpermissions.RxPermissions
 import com.tencent.mmkv.MMKV
 import ir.saltech.freedom.AppConfig
 import ir.saltech.freedom.AppConfig.ANG_PACKAGE
+import ir.saltech.freedom.AppConfig.PREF_ALLOW_INSECURE
+import ir.saltech.freedom.AppConfig.PREF_MUX_ENABLED
 import ir.saltech.freedom.AppConfig.PREF_SPEED_ENABLED
 import ir.saltech.freedom.BuildConfig
 import ir.saltech.freedom.R
@@ -127,7 +129,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         override fun onAvailable(network: Network) {
             mainViewModel.updateConnectivityAction.postValue(true)
-            settingsStorage?.encode(PREF_SPEED_ENABLED, true)
         }
 
         override fun onLost(network: Network) {
@@ -169,6 +170,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
         mainViewModel.updateConnectivityAction.value = NetworkMonitor(this).isNetworkAvailable()
         settingsStorage?.encode(PREF_SPEED_ENABLED, true)
+        settingsStorage?.encode(PREF_MUX_ENABLED, true)
         getPermissions()
         setupViewModel()
         onClicks()
@@ -477,6 +479,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         }
                     }
             } else {
+                settingsStorage?.encode(PREF_MUX_ENABLED, false)
                 Log.i("SERVER_CONNECTION", "Connection failed: $it")
                 if (it != "اتصال به اینترنت شناسایی نشد:  context canceled") {
                     Utils.stopVService(this, mainViewModel)
@@ -1295,6 +1298,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     doConfigService(responseObject)
                 }
 
+                @SuppressLint("SetTextI18n")
                 override fun onFailure(response: ResponseMsg?, t: Throwable?) {
                     if (activate) {
                         toast("خطا در فعالسازی سرویس: ${response?.message}")
@@ -1350,12 +1354,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                     if (response?.message == "xuser not found" || response?.message == "service not found") {
                                                         doPurchaseService()
                                                     } else {
+                                                        binding.checkingServices.visibility = GONE
                                                         binding.errorOccurred.visibility = VISIBLE
-                                                        Toast.makeText(
-                                                            activity,
-                                                            "خطا حین دستیابی به سرویس: ${response?.message}",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
+                                                        binding.errorOccurredText.text =
+                                                            "خطا حین دستیابی به سرویس: ${response?.message}"
                                                     }
                                                 }
 
@@ -1367,12 +1369,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                         if (response?.message == "user not found in service db") {
                                             doPurchaseService()
                                         } else {
+                                            binding.checkingServices.visibility = GONE
                                             binding.errorOccurred.visibility = VISIBLE
-                                            Toast.makeText(
-                                                activity,
-                                                "خطا حین تخصیص سرویس: ${response?.message}",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            binding.errorOccurredText.text =
+                                                "خطا حین تخصیص سرویس: ${response?.message}"
                                         }
                                     }
 
@@ -1385,6 +1385,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             toast("سرویس شما به پایان رسیده است یا یافت نشد!")
                             doPurchaseService()
                         } else {
+                            binding.checkingServices.visibility = GONE
                             if (response != null) {
                                 if (response.message.contains("token handle error") || response.message == "user not found") {
                                     Toast.makeText(
@@ -1394,17 +1395,22 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                     ).show()
                                     user = null
                                     mainViewModel.saveUser(null)
-                                    finishAndRemoveTask()
+                                    startActivity(Intent(this@MainActivity, MainActivity::class.java))
+                                } else {
+                                    binding.errorOccurred.visibility = VISIBLE
+                                    binding.errorOccurredText.text =
+                                        "خطا حین دستیابی به سرویس: ${response.message}"
                                 }
-                                binding.checkingServices.visibility = GONE
-                                Toast.makeText(
-                                    activity,
-                                    "خطا حین دستیابی به سرویس: ${response.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
                             } else {
-                                toast("... بررسی مجدد ...")
-                                getUserService()
+                                if (t != null) {
+                                    binding.errorOccurred.visibility = VISIBLE
+                                    binding.errorOccurredText.text =
+                                        "خطا حین دستیابی به سرویس: ${t.message}"
+                                } else {
+                                    binding.errorOccurred.visibility = VISIBLE
+                                    binding.errorOccurredText.text =
+                                        "خطا حین دستیابی به سرویس: خطای ناشناخته"
+                                }
                             }
                         }
                     }
