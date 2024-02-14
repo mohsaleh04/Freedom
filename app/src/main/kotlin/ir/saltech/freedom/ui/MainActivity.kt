@@ -1835,6 +1835,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             if (user?.service!!.localLink != null) {
                 AlertDialog.Builder(this)
                     .setTitle("تغییر نوع اتصال")
+                    .setIcon(R.drawable.ic_change_24dp)
                     .setMessage(if (usingLocalLink) "آیا میخواهید اتصال خود را از واسط به مستقیم تغییر دهید؟" else "آیا میخواهید اتصال خود را از مستقیم به واسط تغییر دهید؟")
                     .setPositiveButton("بله") { dialog, _ ->
                         if (!usingLocalLink) {
