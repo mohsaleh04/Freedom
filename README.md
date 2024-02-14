@@ -1,4 +1,4 @@
-# Prox (Freedom)
+#  <img src="https://github.com/saltechco/Freedom/blob/master/app/src/main/ProxLogo.png" alt="drawing" style="width:30px;"/>  Prox (Freedom)
 
 A v2ray based client application for Android, support [Xray core](https://github.com/XTLS/Xray-core) and [v2fly core](https://github.com/v2fly/v2ray-core)
 
