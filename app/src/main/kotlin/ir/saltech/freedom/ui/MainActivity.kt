@@ -55,6 +55,7 @@ import ir.saltech.freedom.R
 import ir.saltech.freedom.databinding.ActivityMainBinding
 import ir.saltech.freedom.databinding.ItemQrcodeBinding
 import ir.saltech.freedom.dto.EConfigType
+import ir.saltech.freedom.dto.Notification
 import ir.saltech.freedom.dto.api.ApiCallback
 import ir.saltech.freedom.dto.api.PAYMENT_URL
 import ir.saltech.freedom.dto.api.ResponseMsg
@@ -177,11 +178,42 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         settingsStorage?.encode(PREF_MUX_XUDP_CONCURRENCY, 256)
         settingsStorage?.encode(PREF_MUX_CONCURRENCY, 256)
         settingsStorage?.encode(PREF_MUX_XUDP_QUIC, "allow")
+        checkPushNotifications()
         getPermissions()
         setupViewModel()
         onClicks()
         copyAssets()
         migrateLegacy()
+    }
+
+    private fun checkPushNotifications() {
+        mainViewModel.sendGetNotificationRequest(object: ApiCallback<ResponseMsg> {
+            override fun onSuccessful(responseObject: ResponseMsg) {
+                if (responseObject.pushNotification != null) {
+                    Log.i(
+                        "NOTIFICATION_CHECK",
+                        "New Notification: ID: ${responseObject.pushNotification.id}, Message: ${responseObject.pushNotification.message}, Time: ${responseObject.pushNotification.time}"
+                    )
+                    val compare = System.currentTimeMillis() - (responseObject.pushNotification.time * 1000)
+                    if (0 < compare && compare < 48 * 3_600_000) {
+                        AlertDialog.Builder(this@MainActivity)
+                            .setIcon(R.drawable.push_notification)
+                            .setTitle("خبر مهم")
+                            .setMessage(responseObject.pushNotification.message)
+                            .setCancelable(false)
+                            .setPositiveButton("متوجه شدم") { dialog, _ -> dialog.dismiss() }
+                            .show()
+                    } else {
+                        Log.e("NOTIFICATION_CHECK", "New Notification has expired: ${System.currentTimeMillis() - responseObject.pushNotification.time}\nCurrent Millis: ${System.currentTimeMillis()} || Notification Time: ${responseObject.pushNotification.time}")
+                    }
+                }
+            }
+
+            override fun onFailure(response: ResponseMsg?, t: Throwable?) {
+                Log.e("NOTIFICATION_CHECK", "Failed to check push notifications: RESPONSE: ${response?.message} || THROWABLE: ${t?.message}")
+            }
+
+        })
     }
 
     private fun getUserDefaults() {
@@ -251,7 +283,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         val payload = appData.toString().substring(uriPath.length)
                         when (payload) {
                             "payment" -> {
-                                checkPaymentResult()
+                                if (this::payment.isInitialized)
+                                    checkPaymentResult()
                             }
                         }
                     }

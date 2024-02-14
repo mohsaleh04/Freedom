@@ -411,6 +411,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             )
     }
 
+    fun sendGetNotificationRequest(callback: ApiCallback<ResponseMsg>) {
+        ApiClient.freedom.getNotification().call(callback)
+    }
+
     fun sendBeginPaymentRequest(payment: Payment, callback: ApiCallback<Payment>) {
         ApiClient.payment.beginPayment(payment).call(callback)
     }

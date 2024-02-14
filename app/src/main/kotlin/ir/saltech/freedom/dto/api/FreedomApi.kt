@@ -1,5 +1,6 @@
 package ir.saltech.freedom.dto.api
 
+import ir.saltech.freedom.dto.Notification
 import ir.saltech.freedom.dto.user.Service
 import ir.saltech.freedom.dto.user.User
 import ir.saltech.freedom.dto.user.VspList
@@ -45,4 +46,7 @@ interface FreedomApi {
 
 	@POST("service/purchase")
 	fun purchaseService(@Header(AUTHORIZATION_HEADER) authToken: String, @Body body: Service): Call<ResponseMsg>
+
+	@GET("notification/get")
+	fun getNotification(): Call<ResponseMsg>
 }
