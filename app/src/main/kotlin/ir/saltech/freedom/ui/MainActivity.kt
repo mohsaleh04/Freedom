@@ -55,7 +55,6 @@ import ir.saltech.freedom.R
 import ir.saltech.freedom.databinding.ActivityMainBinding
 import ir.saltech.freedom.databinding.ItemQrcodeBinding
 import ir.saltech.freedom.dto.EConfigType
-import ir.saltech.freedom.dto.Notification
 import ir.saltech.freedom.dto.api.ApiCallback
 import ir.saltech.freedom.dto.api.PAYMENT_URL
 import ir.saltech.freedom.dto.api.ResponseMsg
@@ -144,57 +143,71 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
-        title = getString(R.string.title_server)
-        setSupportActionBar(binding.toolbar)
-        KeyboardDetected.assistActivity(this)
-        binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+        try {
+            binding = ActivityMainBinding.inflate(layoutInflater)
+            val view = binding.root
+            setContentView(view)
+            title = getString(R.string.title_server)
+            setSupportActionBar(binding.toolbar)
+            KeyboardDetected.assistActivity(this)
+            binding.recyclerView.setHasFixedSize(true)
+            binding.recyclerView.layoutManager = LinearLayoutManager(this)
+            binding.recyclerView.adapter = adapter
 
-        val callback = SimpleItemTouchHelperCallback(adapter)
-        mItemTouchHelper = ItemTouchHelper(callback)
-        mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
+            val callback = SimpleItemTouchHelperCallback(adapter)
+            mItemTouchHelper = ItemTouchHelper(callback)
+            mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
 
 
-        val toggle = ActionBarDrawerToggle(
-            this,
-            binding.drawerLayout,
-            binding.toolbar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
-        )
-        binding.drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-        binding.navView.setNavigationItemSelectedListener(this)
-        "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})".also {
-            binding.version.text = it
+            val toggle = ActionBarDrawerToggle(
+                this,
+                binding.drawerLayout,
+                binding.toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+            )
+            binding.drawerLayout.addDrawerListener(toggle)
+            toggle.syncState()
+            binding.navView.setNavigationItemSelectedListener(this)
+            "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})".also {
+                binding.version.text = it
+            }
+            mainViewModel.updateConnectivityAction.value = NetworkMonitor(this).isNetworkAvailable()
+            settingsStorage?.encode(PREF_SPEED_ENABLED, true)
+            settingsStorage?.encode(PREF_MUX_ENABLED, true)
+            settingsStorage?.encode(PREF_MUX_XUDP_CONCURRENCY, 256)
+            settingsStorage?.encode(PREF_MUX_CONCURRENCY, 256)
+            settingsStorage?.encode(PREF_MUX_XUDP_QUIC, "allow")
+            checkPushNotifications()
+            getPermissions()
+            setupViewModel()
+            onClicks()
+            copyAssets()
+            migrateLegacy()
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace();
+            AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_warning)
+                .setTitle("عدم پشتیبانی دستگاه")
+                .setMessage("دستگاه شما، این نرم افزار را پشتیبانی نمی کند!\nمتأسفیم...")
+                .setPositiveButton("متوجه شدم") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setCancelable(false)
+                .show()
         }
-        mainViewModel.updateConnectivityAction.value = NetworkMonitor(this).isNetworkAvailable()
-        settingsStorage?.encode(PREF_SPEED_ENABLED, true)
-        settingsStorage?.encode(PREF_MUX_ENABLED, true)
-        settingsStorage?.encode(PREF_MUX_XUDP_CONCURRENCY, 256)
-        settingsStorage?.encode(PREF_MUX_CONCURRENCY, 256)
-        settingsStorage?.encode(PREF_MUX_XUDP_QUIC, "allow")
-        checkPushNotifications()
-        getPermissions()
-        setupViewModel()
-        onClicks()
-        copyAssets()
-        migrateLegacy()
     }
 
     private fun checkPushNotifications() {
-        mainViewModel.sendGetNotificationRequest(object: ApiCallback<ResponseMsg> {
+        mainViewModel.sendGetNotificationRequest(object : ApiCallback<ResponseMsg> {
             override fun onSuccessful(responseObject: ResponseMsg) {
                 if (responseObject.pushNotification != null) {
                     Log.i(
                         "NOTIFICATION_CHECK",
                         "New Notification: ID: ${responseObject.pushNotification.id}, Message: ${responseObject.pushNotification.message}, Time: ${responseObject.pushNotification.time}"
                     )
-                    val compare = System.currentTimeMillis() - (responseObject.pushNotification.time * 1000)
+                    val compare =
+                        System.currentTimeMillis() - (responseObject.pushNotification.time * 1000)
                     if (0 < compare && compare < 48 * 3_600_000) {
                         AlertDialog.Builder(this@MainActivity)
                             .setIcon(R.drawable.push_notification)
@@ -204,13 +217,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             .setPositiveButton("متوجه شدم") { dialog, _ -> dialog.dismiss() }
                             .show()
                     } else {
-                        Log.e("NOTIFICATION_CHECK", "New Notification has expired: ${System.currentTimeMillis() - responseObject.pushNotification.time}\nCurrent Millis: ${System.currentTimeMillis()} || Notification Time: ${responseObject.pushNotification.time}")
+                        Log.e(
+                            "NOTIFICATION_CHECK",
+                            "New Notification has expired: ${System.currentTimeMillis() - responseObject.pushNotification.time}\nCurrent Millis: ${System.currentTimeMillis()} || Notification Time: ${responseObject.pushNotification.time}"
+                        )
                     }
                 }
             }
 
             override fun onFailure(response: ResponseMsg?, t: Throwable?) {
-                Log.e("NOTIFICATION_CHECK", "Failed to check push notifications: RESPONSE: ${response?.message} || THROWABLE: ${t?.message}")
+                Log.e(
+                    "NOTIFICATION_CHECK",
+                    "Failed to check push notifications: RESPONSE: ${response?.message} || THROWABLE: ${t?.message}"
+                )
             }
 
         })
@@ -1452,8 +1471,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                                     if (response?.message != null) {
                                                         if (response.message == "xuser not found") {
                                                             doPurchaseService()
-                                                        } else if (response.message.contains("service not found") || response.message.contains("service depleted")) {
-                                                            binding.checkingServices.visibility = GONE
+                                                        } else if (response.message.contains("service not found") || response.message.contains(
+                                                                "service depleted"
+                                                            )
+                                                        ) {
+                                                            binding.checkingServices.visibility =
+                                                                GONE
                                                             toast("سرویس شما به پایان رسیده است یا یافت نشد!")
                                                             doPurchaseService(doRevival = true)
                                                         } else {
@@ -1496,7 +1519,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                     }
 
                                 })
-                        } else if (response?.message?.contains("service not found") == true || response?.message?.contains("service depleted") == true) {
+                        } else if (response?.message?.contains("service not found") == true || response?.message?.contains(
+                                "service depleted"
+                            ) == true
+                        ) {
                             binding.checkingServices.visibility = GONE
                             toast("سرویس شما به پایان رسیده است یا یافت نشد!")
                             doPurchaseService(doRevival = true)
